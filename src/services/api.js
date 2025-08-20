@@ -1,11 +1,21 @@
-const API_URL = import.meta.env.VITE_API_URL
+const BASE = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
 
-export async function fetchNews() {
-  const res = await fetch(`${API_URL}/api/news`)
-  return res.json()
+async function request(path, options = {}) {
+  const url = `${BASE}${path}`;
+  const res = await fetch(url, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText} – ${text}`);
+  }
+  return res.json();
 }
 
-export async function fetchEvents() {
-  const res = await fetch(`${API_URL}/api/events`)
-  return res.json()
-}
+// Новини
+export const getNews = () => request("/api/news");
+// Събития
+export const getEvents = () => request("/api/events");
+
+export default { getNews, getEvents };
