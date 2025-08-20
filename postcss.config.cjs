@@ -1,6 +1,4 @@
-// postcss.config.cjs  (CommonJS)
-// Ако файлът е .cjs, използваме module.exports,
-// а не "export default".
+// postcss.config.cjs  (CommonJS синтаксис)
 module.exports = {
   plugins: {
     tailwindcss: {},
