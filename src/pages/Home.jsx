@@ -1,11 +1,18 @@
 // src/pages/Home.jsx
 import { Link } from "react-router-dom";
-import news from "../data/news";
-import events from "../data/events";
+
+// ВАЖНО: с разширение .js + работи и при default export, и при именуван export
+import * as newsModule from "../data/news.js";
+import * as eventsModule from "../data/events.js";
+
+const newsArr =
+  (newsModule?.default ?? newsModule?.news ?? []);
+const eventsArr =
+  (eventsModule?.default ?? eventsModule?.events ?? []);
 
 export default function Home() {
-  const latestNews = (news || []).slice(0, 3);
-  const upcomingEvents = (events || []).slice(0, 3);
+  const latestNews = Array.isArray(newsArr) ? newsArr.slice(0, 3) : [];
+  const upcomingEvents = Array.isArray(eventsArr) ? eventsArr.slice(0, 3) : [];
 
   return (
     <main className="min-h-screen">
@@ -53,7 +60,7 @@ export default function Home() {
               </div>
               <ul className="divide-y">
                 {latestNews.map((n) => (
-                  <li key={n.id} className="px-5 py-4">
+                  <li key={n.id ?? n.title} className="px-5 py-4">
                     <p className="text-xs text-slate-500">{n.date}</p>
                     <p className="mt-1 font-medium">{n.title}</p>
                     {n.excerpt && (
@@ -82,7 +89,7 @@ export default function Home() {
               </div>
               <ul className="divide-y">
                 {upcomingEvents.map((e) => (
-                  <li key={e.id} className="px-5 py-4">
+                  <li key={e.id ?? e.title} className="px-5 py-4">
                     <p className="text-xs text-slate-500">
                       {e.date} {e.time ? `• ${e.time}` : ""}
                     </p>
