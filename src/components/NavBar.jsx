@@ -1,4 +1,3 @@
-// src/components/NavBar.jsx
 import { Link, NavLink } from "react-router-dom";
 import { Tv } from "lucide-react";
 
