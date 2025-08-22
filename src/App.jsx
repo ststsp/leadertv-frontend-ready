@@ -2,14 +2,13 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import NavBar from "./components/NavBar";
+import NavBar from "./components/NavBar.jsx";
 
-// ВАЖНО: Чисти, кратки импорти към страниците
-import Home from "./pages/Home";
-import NewsPage from "./pages/NewsPage";
-import NewsDetail from "./pages/NewsDetail";
-import EventsPage from "./pages/EventsPage";
-import Admin from "./pages/Admin";
+import Home from "./pages/Home.jsx";
+import NewsPage from "./pages/NewsPage.jsx";
+import NewsDetail from "./pages/NewsDetail.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
+import Admin from "./pages/Admin.jsx";
 
 export default function App() {
   return (
