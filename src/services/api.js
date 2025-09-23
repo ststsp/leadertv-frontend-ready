@@ -1,21 +1,36 @@
-const BASE = import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "";
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/+$/, '')
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX || '/api').replace(/\/+$/, '')
+const BASE = `${API_URL}${API_PREFIX}`
 
-async function request(path, options = {}) {
-  const url = `${BASE}${path}`;
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} ${res.statusText} – ${text}`);
-  }
-  return res.json();
+
+async function http(method, url, data){
+const res = await fetch(`${BASE}${url}`, {
+method,
+headers: { 'Content-Type': 'application/json' },
+body: data ? JSON.stringify(data) : undefined,
+})
+if(!res.ok){
+const text = await res.text().catch(()=> '')
+throw new Error(`${res.status} ${res.statusText}: ${text}`)
+}
+const ct = res.headers.get('content-type') || ''
+return ct.includes('application/json') ? res.json() : res.text()
 }
 
-// Новини
-export const getNews = () => request("/api/news");
-// Събития
-export const getEvents = () => request("/api/events");
 
-export default { getNews, getEvents };
+// NEWS
+export const NewsAPI = {
+list: () => http('GET', '/news'),
+create: (payload) => http('POST', '/news', payload),
+remove: (id) => http('DELETE', `/news/${id}`),
+update: (id, payload) => http('PUT', `/news/${id}`, payload),
+}
+
+
+// EVENTS
+export const EventsAPI = {
+list: () => http('GET', '/events'),
+create: (payload) => http('POST', '/events', payload),
+remove: (id) => http('DELETE', `/events/${id}`),
+update: (id, payload) => http('PUT', `/events/${id}`, payload),
+}

@@ -1,15 +1,138 @@
 <!doctype html>
 <html lang="bg">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>LeaderTV</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LeaderTV – Начало</title>
+  <meta name="description" content="Платформа за новини и събития на МИГ и партньорски организации" />
+
+  <!-- ===== КРАСИВИ СТИЛОВЕ (пасват и на admin.html) ===== -->
+  <style>
+  :root{
+    --bg:#f8fafc;--panel:#fff;--fg:#0f172a;--muted:#64748b;--border:#e5e7eb;
+    --ring:#2563eb;--shadow:0 8px 24px rgba(2,6,23,.06);
+    --green:#16a34a;--green-600:#15803d;--red:#ef4444;--amber:#f59e0b;
+    --gray-100:#f3f4f6;--gray-200:#e5e7eb;
+  }
+  *{box-sizing:border-box}html,body{height:100%}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;margin:0;color:var(--fg);background:var(--bg)}
+  header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border);backdrop-filter:saturate(160%) blur(6px)}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px}
+  nav a{display:inline-block;margin-right:14px;color:var(--fg);text-decoration:none;padding:8px 10px;border-radius:10px;transition:.15s}
+  nav a:hover{background:var(--gray-100)} nav a u{text-underline-offset:3px}
+  h1{font-size:28px;margin:22px 0} h2{font-size:20px;margin:14px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 4px 14px rgba(2,6,23,.05)}
+  .muted{color:var(--muted)} .meta{font-size:.92rem;color:var(--muted)}
+  footer{border-top:1px solid var(--border);margin-top:40px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex;align-items:center;gap:16px;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img src="/favicon.ico" alt="" width="20" height="20" />
+        <strong>LeaderTV</strong>
+      </div>
+      <nav>
+        <a href="/"><u>Начало</u></a>
+        <a href="#news">Новини</a>
+        <a href="#events">Събития</a>
+        <a href="/admin">Админ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Добре дошли в <span style="white-space:nowrap">LeaderTV</span></h1>
+    <p class="muted">Платформа за новини и събития на МИГ и партньорски организации.</p>
+
+    <section id="news" class="grid" style="margin-top:18px">
+      <div class="card">
+        <h2>Последни новини</h2>
+        <div id="news-list" style="display:grid;gap:12px"></div>
+        <p id="news-empty" class="muted" style="display:none">Няма записи.</p>
+      </div>
+
+      <div class="card" id="events">
+        <h2>Предстоящи събития</h2>
+        <div id="events-list" style="display:grid;gap:12px"></div>
+        <p id="events-empty" class="muted" style="display:none">Няма записи.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p class="muted">© 2025 LeaderTV. Всички права запазени.</p>
+  </footer>
+
+  <!-- ===== JS (работи с Vercel/Vite env променливите) ===== -->
+  <script type="module">
+    const API_URL   = (import.meta?.env?.VITE_API_URL   ?? '').replace(/\/$/,'');
+    const API_PREF  =  import.meta?.env?.VITE_API_PREFIX ?? '/api';
+    const API_BASE  = (API_URL || '') + API_PREF; // очакваме да е сетнато във Vercel
+
+    async function getJSON(path){
+      const r = await fetch(API_BASE + path, {headers:{'accept':'application/json'}});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+
+    const elNews   = document.getElementById('news-list');
+    const elNewsEmpty = document.getElementById('news-empty');
+    const elEv     = document.getElementById('events-list');
+    const elEvEmpty= document.getElementById('events-empty');
+
+    function cardNews(n){
+      const d = document.createElement('article'); d.className='item';
+      d.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+          <strong>${escapeHTML(n.title)}</strong>
+          <span class="meta">${escapeHTML(n.date || '')}</span>
+        </div>
+        ${n.body ? `<div style="margin-top:6px">${escapeMultiline(n.body)}</div>` : ''}
+      `;
+      return d;
+    }
+    function cardEvent(e){
+      const d = document.createElement('article'); d.className='item';
+      d.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+          <strong>${escapeHTML(e.title)}</strong>
+          <span class="meta">${escapeHTML(e.date || '')}</span>
+        </div>
+        ${e.location ? `<div class="meta" style="margin-top:6px">Локация: ${escapeHTML(e.location)}</div>` : ''}
+      `;
+      return d;
+    }
+
+    function render(list, el, emptyEl, factory){
+      el.innerHTML = '';
+      if(!list || !list.length){ emptyEl.style.display='block'; return; }
+      emptyEl.style.display='none';
+      list.forEach(x => el.appendChild(factory(x)));
+    }
+
+    function escapeHTML(s=''){return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+    function escapeMultiline(s=''){return escapeHTML(s).replace(/\n/g,'<br/>')}
+
+    async function load(){
+      try{
+        const [news, evs] = await Promise.all([
+          getJSON('/news'),
+          getJSON('/events'),
+        ]);
+        render(news, elNews, elNewsEmpty, cardNews);
+        render(evs, elEv, elEvEmpty, cardEvent);
+      }catch(e){
+        console.error(e);
+        elNewsEmpty.style.display='block';
+        elEvEmpty.style.display='block';
+      }
+    }
+    load();
+  </script>
+</body>
 </html>

@@ -1,561 +1,409 @@
+// src/pages/Admin.jsx
 import { useEffect, useMemo, useState } from "react";
 
-/* --- Нормализиран API base (махаме крайни . и /) --- */
-const apiBase = (() => {
-  const rawBase = import.meta.env.VITE_API_URL || "";
-  const base = rawBase.replace(/[./]+$/, "");
-  const prefRaw = import.meta.env.VITE_API_PREFIX || "/api";
-  const pref = prefRaw.startsWith("/") ? prefRaw : `/${prefRaw}`;
-  return `${base}${pref}`;
-})();
+const API_URL = import.meta.env.VITE_API_URL || "";
+const API_PREFIX = import.meta.env.VITE_API_PREFIX || "/api";
+const API_BASE = `${API_URL.replace(/\/$/, "")}${API_PREFIX}`;
 
-/* --- Admin key (локално в браузъра) --- */
-function useAdminKey() {
-  const [key, setKey] = useState(() => localStorage.getItem("adminKey") || "");
-  const save = (k) => {
-    setKey(k);
-    localStorage.setItem("adminKey", k);
-  };
-  const clear = () => {
-    setKey("");
-    localStorage.removeItem("adminKey");
-  };
-  return { key, save, clear };
-}
+export default function Admin() {
+  // -------- Admin key (login) --------
+  const [adminInput, setAdminInput] = useState("");
+  const [adminKey, setAdminKey] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const isAuthed = useMemo(() => Boolean(adminKey), [adminKey]);
 
-/* --- Fetch helper --- */
-async function apiJson(url, { method = "GET", body, adminKey } = {}) {
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(adminKey ? { "x-admin-key": adminKey } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${t || res.statusText}`);
+  useEffect(() => {
+    const saved = sessionStorage.getItem("adminKey") || "";
+    setAdminKey(saved);
+    setAdminInput(saved ? "********" : "");
+  }, []);
+
+  const handleLogin = () => {
+    // Ако полето е "маскирано" с ******** и вече имаме ключ — просто покажи статус
+    if (adminInput === "********" && adminKey) return;
+    const val = adminInput.trim();
+    if (!val) {
+      alert("Моля, въведи админ ключ.");
+      return;
+    }
+    sessionStorage.setItem("adminKey", val);
+    setAdminKey(val);
+    alert("Успешен вход (ключът е запазен за тази сесия).");
+    // Маскирай веднага полето
+    setAdminInput("********");
+    setShowPassword(false);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("adminKey");
+    setAdminKey("");
+    setAdminInput("");
+  };
+
+  // -------- Helpers for API --------
+  async function api(method, path, body) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(method !== "GET" && method !== "HEAD" && adminKey
+          ? { "x-admin-key": adminKey }
+          : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    // Хвани текст при грешка, за да покажем полезно съобщение
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const data = await res.json();
+        if (data?.error) msg += `: ${JSON.stringify(data)}`;
+      } catch {
+        // ignore
+      }
+      throw new Error(msg);
+    }
+    // При 204 няма тяло
+    if (res.status === 204) return null;
+    return res.json();
   }
-  if (res.status === 204) return null;
-  return res.json();
-}
 
-export default function AdminPage() {
-  const { key, save, clear } = useAdminKey();
-
+  // -------- Списъци (новини/събития) --------
   const [news, setNews] = useState([]);
   const [events, setEvents] = useState([]);
 
-  // форми за създаване
-  const [nTitle, setNTitle] = useState("");
-  const [nDate, setNDate] = useState("");
-  const [nBody, setNBody] = useState("");
-  const [eTitle, setETitle] = useState("");
-  const [eDate, setEDate] = useState("");
-  const [eLoc, setELoc] = useState("");
-
-  // редакция
-  const [editType, setEditType] = useState(null); // "news" | "events" | null
-  const [editId, setEditId] = useState(null);
-  const [editData, setEditData] = useState({});
-
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-
-  // login state
-  const [logged, setLogged] = useState(() => !!localStorage.getItem("adminKey"));
-  const [loginStatus, setLoginStatus] = useState("idle"); // idle | checking | ok | bad
-
-  const endpoints = useMemo(
-    () => ({
-      news: `${apiBase}/news`,
-      events: `${apiBase}/events`,
-    }),
-    []
-  );
-
   const loadAll = async () => {
-    setErr("");
     try {
-      const [n, e] = await Promise.all([
-        apiJson(endpoints.news),
-        apiJson(endpoints.events),
-      ]);
-      setNews(n);
-      setEvents(e);
-    } catch (e) {
-      setErr(e.message);
+      const [n, e] = await Promise.all([api("GET", "/news"), api("GET", "/events")]);
+      setNews(n || []);
+      setEvents(e || []);
+    } catch (err) {
+      console.error(err);
+      // не блокирай UI
     }
   };
 
   useEffect(() => {
     loadAll();
-  }, []); // on mount
+  }, []);
 
-  /* ---------- LOGIN / LOGOUT ---------- */
-  const verifyKey = async () => {
-    if (!key) {
-      setLogged(false);
-      setLoginStatus("bad");
-      return;
-    }
-    setLoginStatus("checking");
+  // -------- Публикуване: новина --------
+  const [nTitle, setNTitle] = useState("");
+  const [nDate, setNDate] = useState("");
+  const [nBody, setNBody] = useState("");
+
+  const submitNews = async () => {
+    if (!isAuthed) return alert("Първо влез с админ ключ.");
+    if (!nTitle.trim() || !nDate.trim() || !nBody.trim())
+      return alert("Попълни заглавие, дата и текст.");
     try {
-      // DELETE до невалидно id: при валиден ключ -> 404, при невалиден -> 401
-      const res = await fetch(`${endpoints.news}/__verify__`, {
-        method: "DELETE",
-        headers: { "x-admin-key": key, "Content-Type": "application/json" },
-      });
-      if (res.status === 401) {
-        setLogged(false);
-        setLoginStatus("bad");
-        return;
-      }
-      setLogged(true);
-      setLoginStatus("ok");
-    } catch {
-      setLogged(false);
-      setLoginStatus("bad");
-    }
-  };
-
-  const logout = () => {
-    clear();
-    setLogged(false);
-    setLoginStatus("idle");
-  };
-
-  /* ---------- CREATE ---------- */
-  const submitNews = async (ev) => {
-    ev.preventDefault();
-    setLoading(true);
-    setErr("");
-    try {
-      await apiJson(endpoints.news, {
-        method: "POST",
-        body: { title: nTitle, date: nDate, body: nBody },
-        adminKey: key,
-      });
+      await api("POST", "/news", { title: nTitle, date: nDate, body: nBody });
+      alert("Новината е публикувана.");
       setNTitle("");
       setNDate("");
       setNBody("");
-      await loadAll();
-      alert("Новината е публикувана.");
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setLoading(false);
+      loadAll();
+    } catch (err) {
+      alert(`Проблем при публикуване: ${err.message}`);
     }
   };
 
-  const submitEvent = async (ev) => {
-    ev.preventDefault();
-    setLoading(true);
-    setErr("");
+  // -------- Публикуване: събитие --------
+  const [eTitle, setETitle] = useState("");
+  const [eDate, setEDate] = useState("");
+  const [eLocation, setELocation] = useState("");
+
+  const submitEvent = async () => {
+    if (!isAuthed) return alert("Първо влез с админ ключ.");
+    if (!eTitle.trim() || !eDate.trim())
+      return alert("Попълни заглавие и дата (локацията е по желание).");
     try {
-      await apiJson(endpoints.events, {
-        method: "POST",
-        body: { title: eTitle, date: eDate, location: eLoc },
-        adminKey: key,
-      });
+      await api("POST", "/events", { title: eTitle, date: eDate, location: eLocation });
+      alert("Събитието е публикувано.");
       setETitle("");
       setEDate("");
-      setELoc("");
-      await loadAll();
-      alert("Събитието е публикувано.");
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setLoading(false);
+      setELocation("");
+      loadAll();
+    } catch (err) {
+      alert(`Проблем при публикуване: ${err.message}`);
     }
   };
 
-  /* ---------- EDIT ---------- */
-  const beginEdit = (type, item) => {
-    setEditType(type);
-    setEditId(item.id || item._id);
-    if (type === "news") {
-      setEditData({
-        title: item.title || "",
-        date: item.date || "",
-        body: item.body || "",
-      });
-    } else {
-      setEditData({
-        title: item.title || "",
-        date: item.date || "",
-        location: item.location || "",
-      });
-    }
-  };
-
-  const cancelEdit = () => {
-    setEditType(null);
-    setEditId(null);
-    setEditData({});
-  };
-
-  const saveEdit = async () => {
-    if (!editType || !editId) return;
-    const url =
-      editType === "news"
-        ? `${endpoints.news}/${editId}`
-        : `${endpoints.events}/${editId}`;
-    setLoading(true);
-    setErr("");
+  // -------- Редакция/Изтриване --------
+  const editNews = async (item) => {
+    if (!isAuthed) return alert("Първо влез с админ ключ.");
+    const title = prompt("Заглавие:", item.title ?? "");
+    if (title === null) return;
+    const date = prompt("Дата (YYYY-MM-DD):", item.date ?? "");
+    if (date === null) return;
+    const body = prompt("Текст:", item.body ?? "");
+    if (body === null) return;
     try {
-      await apiJson(url, { method: "PUT", body: editData, adminKey: key });
-      await loadAll();
-      cancelEdit();
-      alert("Промените са записани.");
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setLoading(false);
+      await api("PUT", `/news/${item.id}`, { title, date, body });
+      alert("Новината е обновена.");
+      loadAll();
+    } catch (err) {
+      alert(`Проблем при редакция: ${err.message}`);
     }
   };
 
-  /* ---------- DELETE ---------- */
-  const deleteItem = async (type, id) => {
-    if (!window.confirm("Сигурни ли сте, че искате да изтриете?")) return;
-    const url =
-      type === "news" ? `${endpoints.news}/${id}` : `${endpoints.events}/${id}`;
-    setLoading(true);
-    setErr("");
+  const deleteNews = async (item) => {
+    if (!isAuthed) return alert("Първо влез с админ ключ.");
+    if (!confirm("Сигурни ли сте, че искате да изтриете тази новина?")) return;
     try {
-      await apiJson(url, { method: "DELETE", adminKey: key });
-      await loadAll();
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setLoading(false);
+      await api("DELETE", `/news/${item.id}`);
+      loadAll();
+    } catch (err) {
+      alert(`Проблем при изтриване: ${err.message}`);
     }
   };
 
-  const isEditing = (type, id) => editType === type && editId === (id || null);
+  const editEvent = async (item) => {
+    if (!isAuthed) return alert("Първо влез с админ ключ.");
+    const title = prompt("Заглавие:", item.title ?? "");
+    if (title === null) return;
+    const date = prompt("Дата (YYYY-MM-DD):", item.date ?? "");
+    if (date === null) return;
+    const location = prompt("Локация:", item.location ?? "");
+    if (location === null) return;
+    try {
+      await api("PUT", `/events/${item.id}`, { title, date, location });
+      alert("Събитието е обновено.");
+      loadAll();
+    } catch (err) {
+      alert(`Проблем при редакция: ${err.message}`);
+    }
+  };
+
+  const deleteEvent = async (item) => {
+    if (!isAuthed) return alert("Първо влез с админ ключ.");
+    if (!confirm("Сигурни ли сте, че искате да изтриете това събитие?")) return;
+    try {
+      await api("DELETE", `/events/${item.id}`);
+      loadAll();
+    } catch (err) {
+      alert(`Проблем при изтриване: ${err.message}`);
+    }
+  };
+
+  // -------- UI helpers --------
+  const chipStyle = (ok) => ({
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 600,
+    marginLeft: 10,
+    background: ok ? "#DCFCE7" : "#F3F4F6",
+    color: ok ? "#166534" : "#374151",
+    border: `1px solid ${ok ? "#86efac" : "#e5e7eb"}`,
+  });
+
+  const btn = {
+    base: {
+      padding: "8px 14px",
+      borderRadius: 8,
+      border: "1px solid #e5e7eb",
+      cursor: "pointer",
+      fontWeight: 600,
+      background: "#f9fafb",
+    },
+    primary: {
+      background: "#16a34a",
+      color: "#fff",
+      borderColor: "#16a34a",
+    },
+    danger: {
+      background: "#ef4444",
+      color: "#fff",
+      borderColor: "#ef4444",
+    },
+    warn: {
+      background: "#f59e0b",
+      color: "#fff",
+      borderColor: "#f59e0b",
+    },
+  };
+
+  const card = {
+    border: "1px solid #e5e7eb",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Админ панел</h1>
+    <div className="container" style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 16px" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Админ панел</h1>
 
-      {/* Login box */}
-      <div className="mb-8 rounded-xl border border-gray-200 p-4 flex flex-wrap items-center gap-3">
-        <label className="font-medium">Админ ключ:</label>
-        <input
-          type="password"
-          className="border rounded px-3 py-2 w-72"
-          placeholder="въведи парола..."
-          value={key}
-          onChange={(e) => save(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={verifyKey}
-          className="px-3 py-2 rounded bg-emerald-600 text-white disabled:opacity-50"
-          disabled={!key || loginStatus === "checking"}
-        >
-          {loginStatus === "checking" ? "Проверка..." : "Вход"}
+      {/* Login row */}
+      <div style={{ ...card, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <label style={{ minWidth: 90, fontWeight: 600 }}>Админ ключ:</label>
+
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            value={adminInput}
+            onChange={(e) => setAdminInput(e.target.value)}
+            placeholder="въведи парола…"
+            style={{
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid #e5e7eb",
+              minWidth: 260,
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            aria-label={showPassword ? "Скрий паролата" : "Покажи паролата"}
+            style={{
+              ...btn.base,
+              position: "relative",
+              marginLeft: 8,
+            }}
+          >
+            {showPassword ? "Скрий" : "Покажи"}
+          </button>
+        </div>
+
+        <button type="button" onClick={handleLogin} style={{ ...btn.base, ...btn.primary }}>
+          Вход
         </button>
-        <button
-          type="button"
-          onClick={logout}
-          className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200"
-        >
+        <button type="button" onClick={handleLogout} style={{ ...btn.base }}>
           Изход
         </button>
 
-        <div className="ml-auto text-sm text-gray-500">
-          API: <code>{apiBase}</code>
+        <span style={{ marginLeft: "auto", fontSize: 14 }}>
+          API:{" "}
+          <a href={API_BASE} target="_blank" rel="noreferrer">
+            {API_BASE}
+          </a>
+          <span style={chipStyle(isAuthed)}>{isAuthed ? "Влязъл" : "Не влязъл"}</span>
+        </span>
+      </div>
+
+      {/* Forms */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 24,
+          alignItems: "start",
+          marginTop: 8,
+        }}
+      >
+        {/* News form */}
+        <div style={card}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Публикувай новина</h2>
+          <div style={{ display: "grid", gap: 10 }}>
+            <input
+              placeholder="Заглавие"
+              value={nTitle}
+              onChange={(e) => setNTitle(e.target.value)}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb" }}
+            />
+            <input
+              placeholder="Дата (YYYY-MM-DD)"
+              value={nDate}
+              onChange={(e) => setNDate(e.target.value)}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb" }}
+            />
+            <textarea
+              placeholder="Текст"
+              rows={6}
+              value={nBody}
+              onChange={(e) => setNBody(e.target.value)}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb" }}
+            />
+            <div>
+              <button onClick={submitNews} style={{ ...btn.base, ...btn.primary }}>
+                Публикувай
+              </button>
+            </div>
+          </div>
+
+          <h3 style={{ marginTop: 18, marginBottom: 6 }}>Последни новини</h3>
+          {news.length === 0 ? (
+            <div style={{ color: "#6b7280" }}>Няма записи.</div>
+          ) : (
+            news
+              .slice()
+              .reverse()
+              .map((n) => (
+                <div key={n.id} style={{ ...card, marginBottom: 10 }}>
+                  <div style={{ fontWeight: 700 }}>{n.title}</div>
+                  <div style={{ fontSize: 12, color: "#6b7280" }}>{n.date}</div>
+                  {n.body ? <div style={{ marginTop: 6 }}>{n.body}</div> : null}
+                  <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                    <button onClick={() => editNews(n)} style={{ ...btn.base, ...btn.warn }}>
+                      Редакция
+                    </button>
+                    <button onClick={() => deleteNews(n)} style={{ ...btn.base, ...btn.danger }}>
+                      Изтриване
+                    </button>
+                  </div>
+                </div>
+              ))
+          )}
         </div>
 
-        {loginStatus === "ok" && (
-          <div className="text-emerald-600 text-sm">Влязъл</div>
-        )}
-        {loginStatus === "bad" && (
-          <div className="text-rose-600 text-sm">Невалиден ключ</div>
-        )}
-      </div>
-
-      {err && (
-        <div className="mb-6 p-3 rounded bg-red-50 text-red-700">{err}</div>
-      )}
-
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Новина */}
-        <form onSubmit={submitNews} className="rounded-2xl border p-5">
-          <h2 className="text-xl font-semibold mb-4">Публикувай новина</h2>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm mb-1">Заглавие</label>
+        {/* Events form */}
+        <div style={card}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Публикувай събитие</h2>
+          <div style={{ display: "grid", gap: 10 }}>
+            <input
+              placeholder="Заглавие"
+              value={eTitle}
+              onChange={(e) => setETitle(e.target.value)}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb" }}
+            />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <input
-                className="w-full border rounded px-3 py-2"
-                value={nTitle}
-                onChange={(e) => setNTitle(e.target.value)}
-                required
+                placeholder="Дата (YYYY-MM-DD)"
+                value={eDate}
+                onChange={(e) => setEDate(e.target.value)}
+                style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb" }}
               />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">Дата (YYYY-MM-DD)</label>
               <input
-                className="w-full border rounded px-3 py-2"
-                value={nDate}
-                onChange={(e) => setNDate(e.target.value)}
-                required
+                placeholder="Локация"
+                value={eLocation}
+                onChange={(e) => setELocation(e.target.value)}
+                style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e5e7eb" }}
               />
             </div>
             <div>
-              <label className="block text-sm mb-1">Текст</label>
-              <textarea
-                className="w-full border rounded px-3 py-2 min-h-[120px]"
-                value={nBody}
-                onChange={(e) => setNBody(e.target.value)}
-                required
-              />
+              <button onClick={submitEvent} style={{ ...btn.base, ...btn.primary }}>
+                Публикувай
+              </button>
             </div>
-            <button
-              disabled={loading || !logged}
-              className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50"
-            >
-              Публикувай
-            </button>
-            {!logged && (
-              <p className="text-sm text-gray-500">
-                Натисни „Вход“, за да активираш публикуването.
-              </p>
-            )}
           </div>
-        </form>
 
-        {/* Събитие */}
-        <form onSubmit={submitEvent} className="rounded-2xl border p-5">
-          <h2 className="text-xl font-semibold mb-4">Публикувай събитие</h2>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm mb-1">Заглавие</label>
-              <input
-                className="w-full border rounded px-3 py-2"
-                value={eTitle}
-                onChange={(e) => setETitle(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm mb-1">Дата</label>
-                <input
-                  className="w-full border rounded px-3 py-2"
-                  value={eDate}
-                  onChange={(e) => setEDate(e.target.value)}
-                  placeholder="YYYY-MM-DD"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm mb-1">Локация</label>
-                <input
-                  className="w-full border rounded px-3 py-2"
-                  value={eLoc}
-                  onChange={(e) => setELoc(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <button
-              disabled={loading || !logged}
-              className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50"
-            >
-              Публикувай
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Списъци */}
-      <div className="mt-10 grid md:grid-cols-2 gap-8">
-        {/* NEWS LIST */}
-        <section>
-          <h3 className="text-lg font-semibold mb-3">Последни новини</h3>
-          <div className="space-y-2">
-            {news.map((n) => {
-              const id = n.id || n._id;
-              const editing = isEditing("news", id);
-              return (
-                <div key={id} className="border rounded p-3">
-                  {!editing ? (
-                    <>
-                      <div className="font-medium">{n.title}</div>
-                      <div className="text-sm text-gray-500">{n.date}</div>
-                      <div className="text-sm mt-1 whitespace-pre-wrap">
-                        {n.body}
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          className="px-3 py-1 rounded bg-amber-500 text-white"
-                          onClick={() => beginEdit("news", n)}
-                          type="button"
-                          disabled={!logged}
-                        >
-                          Редакция
-                        </button>
-                        <button
-                          className="px-3 py-1 rounded bg-rose-600 text-white"
-                          onClick={() => deleteItem("news", id)}
-                          type="button"
-                          disabled={!logged}
-                        >
-                          Изтриване
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="grid gap-2">
-                        <input
-                          className="border rounded px-2 py-1"
-                          value={editData.title || ""}
-                          onChange={(e) =>
-                            setEditData((d) => ({ ...d, title: e.target.value }))
-                          }
-                        />
-                        <input
-                          className="border rounded px-2 py-1"
-                          value={editData.date || ""}
-                          onChange={(e) =>
-                            setEditData((d) => ({ ...d, date: e.target.value }))
-                          }
-                          placeholder="YYYY-MM-DD"
-                        />
-                        <textarea
-                          className="border rounded px-2 py-1 min-h-[90px]"
-                          value={editData.body || ""}
-                          onChange={(e) =>
-                            setEditData((d) => ({ ...d, body: e.target.value }))
-                          }
-                        />
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          className="px-3 py-1 rounded bg-emerald-600 text-white"
-                          onClick={saveEdit}
-                          type="button"
-                          disabled={!logged || loading}
-                        >
-                          Запази
-                        </button>
-                        <button
-                          className="px-3 py-1 rounded bg-gray-200"
-                          onClick={cancelEdit}
-                          type="button"
-                          disabled={loading}
-                        >
-                          Откажи
-                        </button>
-                      </div>
-                    </>
-                  )}
+          <h3 style={{ marginTop: 18, marginBottom: 6 }}>Предстоящи събития</h3>
+          {events.length === 0 ? (
+            <div style={{ color: "#6b7280" }}>Няма записи.</div>
+          ) : (
+            events
+              .slice()
+              .reverse()
+              .map((e) => (
+                <div key={e.id} style={{ ...card, marginBottom: 10 }}>
+                  <div style={{ fontWeight: 700 }}>{e.title}</div>
+                  <div style={{ fontSize: 12, color: "#6b7280" }}>
+                    {e.date} {e.location ? `• ${e.location}` : ""}
+                  </div>
+                  <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                    <button onClick={() => editEvent(e)} style={{ ...btn.base, ...btn.warn }}>
+                      Редакция
+                    </button>
+                    <button onClick={() => deleteEvent(e)} style={{ ...btn.base, ...btn.danger }}>
+                      Изтриване
+                    </button>
+                  </div>
                 </div>
-              );
-            })}
-            {!news.length && (
-              <div className="text-sm text-gray-500">Няма записи.</div>
-            )}
-          </div>
-        </section>
-
-        {/* EVENTS LIST */}
-        <section>
-          <h3 className="text-lg font-semibold mb-3">Предстоящи събития</h3>
-          <div className="space-y-2">
-            {events.map((e) => {
-              const id = e.id || e._id;
-              const editing = isEditing("events", id);
-              return (
-                <div key={id} className="border rounded p-3">
-                  {!editing ? (
-                    <>
-                      <div className="font-medium">{e.title}</div>
-                      <div className="text-sm text-gray-500">
-                        {e.date} · {e.location}
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          className="px-3 py-1 rounded bg-amber-500 text-white"
-                          onClick={() => beginEdit("events", e)}
-                          type="button"
-                          disabled={!logged}
-                        >
-                          Редакция
-                        </button>
-                        <button
-                          className="px-3 py-1 rounded bg-rose-600 text-white"
-                          onClick={() => deleteItem("events", id)}
-                          type="button"
-                          disabled={!logged}
-                        >
-                          Изтриване
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="grid gap-2">
-                        <input
-                          className="border rounded px-2 py-1"
-                          value={editData.title || ""}
-                          onChange={(ev) =>
-                            setEditData((d) => ({ ...d, title: ev.target.value }))
-                          }
-                        />
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            className="border rounded px-2 py-1"
-                            value={editData.date || ""}
-                            onChange={(ev) =>
-                              setEditData((d) => ({ ...d, date: ev.target.value }))
-                            }
-                            placeholder="YYYY-MM-DD"
-                          />
-                          <input
-                            className="border rounded px-2 py-1"
-                            value={editData.location || ""}
-                            onChange={(ev) =>
-                              setEditData((d) => ({
-                                ...d,
-                                location: ev.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          className="px-3 py-1 rounded bg-emerald-600 text-white"
-                          onClick={saveEdit}
-                          type="button"
-                          disabled={!logged || loading}
-                        >
-                          Запази
-                        </button>
-                        <button
-                          className="px-3 py-1 rounded bg-gray-200"
-                          onClick={cancelEdit}
-                          type="button"
-                          disabled={loading}
-                        >
-                          Откажи
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-            {!events.length && (
-              <div className="text-sm text-gray-500">Няма записи.</div>
-            )}
-          </div>
-        </section>
+              ))
+          )}
+        </div>
       </div>
     </div>
   );

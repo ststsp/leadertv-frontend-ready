@@ -1,51 +1,58 @@
-// src/components/News.jsx
-import React, { useEffect, useState } from "react";
-import * as API from "../services/api"; // <— без фигурни скоби
+import { useEffect, useState } from 'react'
+import { NewsAPI } from '../services/api'
 
-export default function News({ limit }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
+export default function News(){
+const [items, setItems] = useState([])
+const [query, setQuery] = useState('')
+const [loading, setLoading] = useState(true)
+const [error, setError] = useState('')
 
-    (async () => {
-      try {
-        const res = await API.fetchNews(); // <— извикваме през namespace
-        const list = Array.isArray(res) ? res : res?.data || [];
-        if (!cancelled) {
-          setItems(limit ? list.slice(0, limit) : list);
-        }
-      } catch (e) {
-        if (!cancelled) setErr(e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [limit]);
+useEffect(() => {
+(async () => {
+try {
+setLoading(true)
+const data = await NewsAPI.list()
+setItems(Array.isArray(data) ? data : [])
+} catch (e) {
+setError(e.message)
+} finally {
+setLoading(false)
+}
+})()
+}, [])
 
-  if (loading) return <div className="text-slate-500">Зареждане…</div>;
-  if (err) return <div className="text-red-600">Възникна грешка при зареждане.</div>;
-  if (!items.length) return <div className="text-slate-500">Няма налични новини.</div>;
 
-  return (
-    <ul className="divide-y divide-slate-200">
-      {items.map((n) => (
-        <li key={n.id ?? `${n.title}-${n.date}`} className="py-3">
-          <a href={`/news/${n.id}`} className="font-medium hover:underline">
-            {n.title}
-          </a>
-          <div className="text-sm text-slate-500">
-            {n.date ? new Date(n.date).toLocaleDateString("bg-BG") : null}
-          </div>
-          {n.excerpt ? <p className="text-slate-600 mt-1">{n.excerpt}</p> : null}
-        </li>
-      ))}
-    </ul>
-  );
+const filtered = items.filter(n => (n.title || '').toLowerCase().includes(query.toLowerCase()))
+
+
+if (loading) return <p>Зареждане на новини…</p>
+if (error) return <p className="text-red-600">Грешка: {error}</p>
+
+
+return (
+<section className="space-y-4">
+<div className="flex items-center gap-2">
+<input
+className="border rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-sky-500"
+placeholder="Търсене в новини..."
+value={query}
+onChange={(e)=>setQuery(e.target.value)}
+/>
+</div>
+<ul className="grid md:grid-cols-2 gap-5">
+{filtered.map(n => (
+<li key={n.id || n._id} className="card">
+<h3 className="font-semibold text-lg">{n.title}</h3>
+{n.date && <p className="text-xs text-slate-500 mb-2">{n.date}</p>}
+<p className="text-slate-700">{n.body}</p>
+</li>
+))}
+{filtered.length === 0 && (
+<li className="text-slate-500">Няма резултати.</li>
+)}
+</ul>
+</section>
+)
 }
