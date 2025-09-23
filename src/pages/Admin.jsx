@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
+/* --- API base (устойчиво срещу / и . накрая) --- */
 const apiBase = (() => {
-  const base = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "";
-  const pref = import.meta.env.VITE_API_PREFIX || "/api";
+  const rawBase = import.meta.env.VITE_API_URL || "";
+  const base = rawBase.replace(/[./]+$/, "");
+  const prefRaw = import.meta.env.VITE_API_PREFIX || "/api";
+  const pref = prefRaw.startsWith("/") ? prefRaw : `/${prefRaw}`;
   return `${base}${pref}`;
 })();
 
+/* --- Admin key (държим го локално в браузъра) --- */
 function useAdminKey() {
   const [key, setKey] = useState(() => localStorage.getItem("adminKey") || "");
   const save = (k) => { setKey(k); localStorage.setItem("adminKey", k); };
@@ -13,6 +17,7 @@ function useAdminKey() {
   return { key, save, clear };
 }
 
+/* --- Фетч с JSON и opt. x-admin-key --- */
 async function apiJson(url, { method = "GET", body, adminKey } = {}) {
   const res = await fetch(url, {
     method,
@@ -26,19 +31,30 @@ async function apiJson(url, { method = "GET", body, adminKey } = {}) {
     const t = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status}: ${t || res.statusText}`);
   }
+  // 204 No Content -> не може да се парсва
+  if (res.status === 204) return null;
   return res.json();
 }
 
 export default function AdminPage() {
   const { key, save, clear } = useAdminKey();
+
   const [news, setNews] = useState([]);
   const [events, setEvents] = useState([]);
+
+  // форми за създаване
   const [nTitle, setNTitle] = useState("");
   const [nDate, setNDate] = useState("");
   const [nBody, setNBody] = useState("");
   const [eTitle, setETitle] = useState("");
   const [eDate, setEDate] = useState("");
   const [eLoc, setELoc] = useState("");
+
+  // редакция
+  const [editType, setEditType] = useState(null); // "news" | "events" | null
+  const [editId, setEditId] = useState(null);
+  const [editData, setEditData] = useState({}); // { title, date, body/location }
+
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
@@ -56,13 +72,12 @@ export default function AdminPage() {
       ]);
       setNews(n);
       setEvents(e);
-    } catch (e) {
-      setErr(e.message);
-    }
+    } catch (e) { setErr(e.message); }
   };
 
-  useEffect(() => { loadAll(); /* on mount */ }, []);
+  useEffect(() => { loadAll(); }, []); // on mount
 
+  /* --------- CREATE --------- */
   const submitNews = async (ev) => {
     ev.preventDefault();
     setLoading(true); setErr("");
@@ -95,8 +110,53 @@ export default function AdminPage() {
     finally { setLoading(false); }
   };
 
+  /* --------- EDIT --------- */
+  const beginEdit = (type, item) => {
+    setEditType(type);
+    setEditId(item.id || item._id);
+    if (type === "news") {
+      setEditData({ title: item.title || "", date: item.date || "", body: item.body || "" });
+    } else {
+      setEditData({ title: item.title || "", date: item.date || "", location: item.location || "" });
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditType(null);
+    setEditId(null);
+    setEditData({});
+  };
+
+  const saveEdit = async () => {
+    if (!editType || !editId) return;
+    const url = `${editType === "news" ? endpoints.news : endpoints.events}/${editId}`;
+    setLoading(true); setErr("");
+    try {
+      await apiJson(url, { method: "PUT", body: editData, adminKey: key });
+      await loadAll();
+      cancelEdit();
+      alert("Промените са записани.");
+    } catch (e) { setErr(e.message); }
+    finally { setLoading(false); }
+  };
+
+  /* --------- DELETE --------- */
+  const deleteItem = async (type, id) => {
+    if (!window.confirm("Сигурни ли сте, че искате да изтриете?")) return;
+    const url = `${type === "news" ? endpoints.news : endpoints.events}/${id}`;
+    setLoading(true); setErr("");
+    try {
+      await apiJson(url, { method: "DELETE", adminKey: key });
+      await loadAll();
+    } catch (e) { setErr(e.message); }
+    finally { setLoading(false); }
+  };
+
+  /* --------- UI helpers --------- */
+  const isEditing = (type, id) => editType === type && editId === (id || null);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Админ панел</h1>
 
       {/* Login box */}
@@ -182,31 +242,141 @@ export default function AdminPage() {
         </form>
       </div>
 
-      {/* Списъци */}
+      {/* Списъци с Редакция/Изтриване */}
       <div className="mt-10 grid md:grid-cols-2 gap-8">
+        {/* NEWS LIST */}
         <section>
           <h3 className="text-lg font-semibold mb-3">Последни новини</h3>
           <div className="space-y-2">
-            {news.map(n => (
-              <div key={n.id} className="border rounded p-3">
-                <div className="font-medium">{n.title}</div>
-                <div className="text-sm text-gray-500">{n.date}</div>
-                <div className="text-sm mt-1 whitespace-pre-wrap">{n.body}</div>
-              </div>
-            ))}
+            {news.map(n => {
+              const id = n.id || n._id;
+              const editing = isEditing("news", id);
+              return (
+                <div key={id} className="border rounded p-3">
+                  {!editing ? (
+                    <>
+                      <div className="font-medium">{n.title}</div>
+                      <div className="text-sm text-gray-500">{n.date}</div>
+                      <div className="text-sm mt-1 whitespace-pre-wrap">{n.body}</div>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          className="px-3 py-1 rounded bg-amber-500 text-white"
+                          onClick={() => beginEdit("news", n)}
+                          type="button"
+                          disabled={!key}
+                        >Редакция</button>
+                        <button
+                          className="px-3 py-1 rounded bg-rose-600 text-white"
+                          onClick={() => deleteItem("news", id)}
+                          type="button"
+                          disabled={!key}
+                        >Изтриване</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="grid gap-2">
+                        <input
+                          className="border rounded px-2 py-1"
+                          value={editData.title || ""}
+                          onChange={(e) => setEditData(d => ({ ...d, title: e.target.value }))}
+                        />
+                        <input
+                          className="border rounded px-2 py-1"
+                          value={editData.date || ""}
+                          onChange={(e) => setEditData(d => ({ ...d, date: e.target.value }))}
+                          placeholder="YYYY-MM-DD"
+                        />
+                        <textarea
+                          className="border rounded px-2 py-1 min-h-[90px]"
+                          value={editData.body || ""}
+                          onChange={(e) => setEditData(d => ({ ...d, body: e.target.value }))}
+                        />
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          className="px-3 py-1 rounded bg-emerald-600 text-white"
+                          onClick={saveEdit} type="button" disabled={!key || loading}
+                        >Запази</button>
+                        <button
+                          className="px-3 py-1 rounded bg-gray-200"
+                          onClick={cancelEdit} type="button" disabled={loading}
+                        >Откажи</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
             {!news.length && <div className="text-sm text-gray-500">Няма записи.</div>}
           </div>
         </section>
 
+        {/* EVENTS LIST */}
         <section>
           <h3 className="text-lg font-semibold mb-3">Предстоящи събития</h3>
           <div className="space-y-2">
-            {events.map(e => (
-              <div key={e.id} className="border rounded p-3">
-                <div className="font-medium">{e.title}</div>
-                <div className="text-sm text-gray-500">{e.date} · {e.location}</div>
-              </div>
-            ))}
+            {events.map(e => {
+              const id = e.id || e._id;
+              const editing = isEditing("events", id);
+              return (
+                <div key={id} className="border rounded p-3">
+                  {!editing ? (
+                    <>
+                      <div className="font-medium">{e.title}</div>
+                      <div className="text-sm text-gray-500">{e.date} · {e.location}</div>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          className="px-3 py-1 rounded bg-amber-500 text-white"
+                          onClick={() => beginEdit("events", e)}
+                          type="button"
+                          disabled={!key}
+                        >Редакция</button>
+                        <button
+                          className="px-3 py-1 rounded bg-rose-600 text-white"
+                          onClick={() => deleteItem("events", id)}
+                          type="button"
+                          disabled={!key}
+                        >Изтриване</button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="grid gap-2">
+                        <input
+                          className="border rounded px-2 py-1"
+                          value={editData.title || ""}
+                          onChange={(ev) => setEditData(d => ({ ...d, title: ev.target.value }))}
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            className="border rounded px-2 py-1"
+                            value={editData.date || ""}
+                            onChange={(ev) => setEditData(d => ({ ...d, date: ev.target.value }))}
+                            placeholder="YYYY-MM-DD"
+                          />
+                          <input
+                            className="border rounded px-2 py-1"
+                            value={editData.location || ""}
+                            onChange={(ev) => setEditData(d => ({ ...d, location: ev.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          className="px-3 py-1 rounded bg-emerald-600 text-white"
+                          onClick={saveEdit} type="button" disabled={!key || loading}
+                        >Запази</button>
+                        <button
+                          className="px-3 py-1 rounded bg-gray-200"
+                          onClick={cancelEdit} type="button" disabled={loading}
+                        >Откажи</button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
             {!events.length && <div className="text-sm text-gray-500">Няма записи.</div>}
           </div>
         </section>
