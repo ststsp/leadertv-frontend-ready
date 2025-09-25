@@ -4,135 +4,144 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LeaderTV – Начало</title>
-  <meta name="description" content="Платформа за новини и събития на МИГ и партньорски организации" />
-
-  <!-- ===== КРАСИВИ СТИЛОВЕ (пасват и на admin.html) ===== -->
   <style>
-  :root{
-    --bg:#f8fafc;--panel:#fff;--fg:#0f172a;--muted:#64748b;--border:#e5e7eb;
-    --ring:#2563eb;--shadow:0 8px 24px rgba(2,6,23,.06);
-    --green:#16a34a;--green-600:#15803d;--red:#ef4444;--amber:#f59e0b;
-    --gray-100:#f3f4f6;--gray-200:#e5e7eb;
-  }
-  *{box-sizing:border-box}html,body{height:100%}
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;margin:0;color:var(--fg);background:var(--bg)}
-  header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border);backdrop-filter:saturate(160%) blur(6px)}
-  .wrap{max-width:1100px;margin:0 auto;padding:18px}
-  nav a{display:inline-block;margin-right:14px;color:var(--fg);text-decoration:none;padding:8px 10px;border-radius:10px;transition:.15s}
-  nav a:hover{background:var(--gray-100)} nav a u{text-underline-offset:3px}
-  h1{font-size:28px;margin:22px 0} h2{font-size:20px;margin:14px 0}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
-  .item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 4px 14px rgba(2,6,23,.05)}
-  .muted{color:var(--muted)} .meta{font-size:.92rem;color:var(--muted)}
-  footer{border-top:1px solid var(--border);margin-top:40px}
+    :root { --fg:#0b1220; --muted:#6b7280; --card:#fff; --bg:#f6f7fb; --brand:#2563eb; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:var(--brand);text-decoration:none}
+    header{background:#fff;border-bottom:1px solid #eceff5}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .brand{font-weight:700}
+    main .grid{display:grid;gap:16px;grid-template-columns:1fr;align-items:start}
+    @media (min-width: 900px){ main .grid{grid-template-columns:1fr 1fr} }
+    .card{background:var(--card);border:1px solid #e8ebf2;border-radius:12px;padding:18px}
+    h1{font-size:28px;margin:10px 0 8px}
+    h2{font-size:20px;margin:0 0 10px}
+    ul{list-style:none;margin:0;padding:0}
+    li{padding:10px 0;border-top:1px solid #eef1f6}
+    li:first-child{border-top:0}
+    .meta{color:var(--muted);font-size:14px;margin-top:2px}
+    .empty{color:var(--muted)}
+    footer{color:var(--muted);padding:24px 0;text-align:center}
+    .hero{padding:24px 0}
+    .hero p{margin:.25rem 0;color:var(--muted)}
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap" style="display:flex;align-items:center;gap:16px;justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:12px">
-        <img src="/favicon.ico" alt="" width="20" height="20" />
-        <strong>LeaderTV</strong>
-      </div>
-      <nav>
-        <a href="/"><u>Начало</u></a>
-        <a href="#news">Новини</a>
-        <a href="#events">Събития</a>
+    <div class="wrap nav">
+      <div class="brand">LeaderTV</div>
+      <nav style="margin-left:auto;display:flex;gap:14px;">
+        <a href="/">Начало</a>
+        <a href="/news">Новини</a>
+        <a href="/events">Събития</a>
         <a href="/admin">Админ</a>
       </nav>
     </div>
   </header>
 
+  <div class="wrap hero">
+    <h1>Добре дошли в LeaderTV</h1>
+    <p>Платформа за новини и събития на МИГ и партньорски организации.</p>
+  </div>
+
   <main class="wrap">
-    <h1>Добре дошли в <span style="white-space:nowrap">LeaderTV</span></h1>
-    <p class="muted">Платформа за новини и събития на МИГ и партньорски организации.</p>
-
-    <section id="news" class="grid" style="margin-top:18px">
-      <div class="card">
+    <div class="grid">
+      <section class="card" id="news-card">
         <h2>Последни новини</h2>
-        <div id="news-list" style="display:grid;gap:12px"></div>
-        <p id="news-empty" class="muted" style="display:none">Няма записи.</p>
-      </div>
+        <ul id="home-news"><li class="empty">Зареждане…</li></ul>
+      </section>
 
-      <div class="card" id="events">
+      <section class="card" id="events-card">
         <h2>Предстоящи събития</h2>
-        <div id="events-list" style="display:grid;gap:12px"></div>
-        <p id="events-empty" class="muted" style="display:none">Няма записи.</p>
-      </div>
-    </section>
+        <ul id="home-events"><li class="empty">Зареждане…</li></ul>
+      </section>
+    </div>
   </main>
 
-  <footer class="wrap">
-    <p class="muted">© 2025 LeaderTV. Всички права запазени.</p>
-  </footer>
+  <footer class="wrap">© 2025 LeaderTV. Всички права запазени.</footer>
 
-  <!-- ===== JS (работи с Vercel/Vite env променливите) ===== -->
-  <script type="module">
-    const API_URL   = (import.meta?.env?.VITE_API_URL   ?? '').replace(/\/$/,'');
-    const API_PREF  =  import.meta?.env?.VITE_API_PREFIX ?? '/api';
-    const API_BASE  = (API_URL || '') + API_PREF; // очакваме да е сетнато във Vercel
+  <script>
+    (function(){
+      const API = 'https://leadertv-backend-production.up.railway.app/api';
 
-    async function getJSON(path){
-      const r = await fetch(API_BASE + path, {headers:{'accept':'application/json'}});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    }
+      const fmtDate = (d) => {
+        if(!d) return '';
+        const t = new Date(d);
+        if (isNaN(t)) return d;
+        const y = t.getFullYear();
+        const m = String(t.getMonth()+1).padStart(2,'0');
+        const dd = String(t.getDate()).padStart(2,'0');
+        return `${y}-${m}-${dd}`;
+      };
 
-    const elNews   = document.getElementById('news-list');
-    const elNewsEmpty = document.getElementById('news-empty');
-    const elEv     = document.getElementById('events-list');
-    const elEvEmpty= document.getElementById('events-empty');
-
-    function cardNews(n){
-      const d = document.createElement('article'); d.className='item';
-      d.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
-          <strong>${escapeHTML(n.title)}</strong>
-          <span class="meta">${escapeHTML(n.date || '')}</span>
-        </div>
-        ${n.body ? `<div style="margin-top:6px">${escapeMultiline(n.body)}</div>` : ''}
-      `;
-      return d;
-    }
-    function cardEvent(e){
-      const d = document.createElement('article'); d.className='item';
-      d.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
-          <strong>${escapeHTML(e.title)}</strong>
-          <span class="meta">${escapeHTML(e.date || '')}</span>
-        </div>
-        ${e.location ? `<div class="meta" style="margin-top:6px">Локация: ${escapeHTML(e.location)}</div>` : ''}
-      `;
-      return d;
-    }
-
-    function render(list, el, emptyEl, factory){
-      el.innerHTML = '';
-      if(!list || !list.length){ emptyEl.style.display='block'; return; }
-      emptyEl.style.display='none';
-      list.forEach(x => el.appendChild(factory(x)));
-    }
-
-    function escapeHTML(s=''){return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-    function escapeMultiline(s=''){return escapeHTML(s).replace(/\n/g,'<br/>')}
-
-    async function load(){
-      try{
-        const [news, evs] = await Promise.all([
-          getJSON('/news'),
-          getJSON('/events'),
-        ]);
-        render(news, elNews, elNewsEmpty, cardNews);
-        render(evs, elEv, elEvEmpty, cardEvent);
-      }catch(e){
-        console.error(e);
-        elNewsEmpty.style.display='block';
-        elEvEmpty.style.display='block';
+      async function loadNews(){
+        const ul = document.getElementById('home-news');
+        try {
+          const res = await fetch(`${API}/news`);
+          const data = await res.json();
+          const items = (data||[])
+            .sort((a,b)=> String(b.date).localeCompare(String(a.date)))
+            .slice(0,3);
+          ul.innerHTML='';
+          if(!items.length){ ul.innerHTML = '<li class="empty">Няма записи.</li>'; return; }
+          for(const n of items){
+            const li = document.createElement('li');
+            const title = document.createElement('div');
+            title.textContent = n.title || '(без заглавие)';
+            title.style.fontWeight='600';
+            const meta = document.createElement('div');
+            meta.className='meta';
+            meta.textContent = fmtDate(n.date);
+            const body = document.createElement('div');
+            if(n.body){ body.textContent = n.body; body.style.marginTop='4px'; }
+            li.appendChild(title);
+            li.appendChild(meta);
+            if(n.body) li.appendChild(body);
+            ul.appendChild(li);
+          }
+        } catch(e){
+          console.error(e);
+          ul.innerHTML = '<li class="empty" style="color:#b00">Грешка при зареждане.</li>';
+        }
       }
-    }
-    load();
+
+      async function loadEvents(){
+        const ul = document.getElementById('home-events');
+        try {
+          const res = await fetch(`${API}/events`);
+          const data = await res.json();
+          const today = new Date().toISOString().slice(0,10);
+          const items = (data||[])
+            .filter(e => !e.date || String(e.date) >= today)
+            .sort((a,b)=> String(a.date).localeCompare(String(b.date)))
+            .slice(0,3);
+          ul.innerHTML='';
+          if(!items.length){ ul.innerHTML = '<li class="empty">Няма записи.</li>'; return; }
+          for(const ev of items){
+            const li = document.createElement('li');
+            const title = document.createElement('div');
+            title.textContent = ev.title || '(без заглавие)';
+            title.style.fontWeight='600';
+            const meta = document.createElement('div');
+            meta.className='meta';
+            meta.textContent = [fmtDate(ev.date), ev.location].filter(Boolean).join(' · ');
+            li.appendChild(title);
+            li.appendChild(meta);
+            ul.appendChild(li);
+          }
+        } catch(e){
+          console.error(e);
+          ul.innerHTML = '<li class="empty" style="color:#b00">Грешка при зареждане.</li>';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadNews();
+        loadEvents();
+      });
+    })();
   </script>
 </body>
 </html>

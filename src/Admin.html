@@ -4,64 +4,48 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LeaderTV – Админ</title>
-
-  <!-- Същите стилове като на index.html -->
   <style>
-  :root{
-    --bg:#f8fafc;--panel:#fff;--fg:#0f172a;--muted:#64748b;--border:#e5e7eb;
-    --ring:#2563eb;--shadow:0 8px 24px rgba(2,6,23,.06);
-    --green:#16a34a;--green-600:#15803d;--red:#ef4444;--red-600:#dc2626;--amber:#f59e0b;--amber-600:#d97706;
-    --gray-100:#f3f4f6;--gray-200:#e5e7eb;
-  }
-  *{box-sizing:border-box}html,body{height:100%}
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;margin:0;color:var(--fg);background:var(--bg)}
-  header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border);backdrop-filter:saturate(160%) blur(6px)}
-  .wrap{max-width:1100px;margin:0 auto;padding:18px}
-  nav a{display:inline-block;margin-right:14px;color:var(--fg);text-decoration:none;padding:8px 10px;border-radius:10px;transition:.15s}
-  nav a:hover{background:var(--gray-100)} nav a u{text-underline-offset:3px}
-  h1{font-size:28px;margin:22px 0}h2{font-size:20px;margin:14px 0}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-  @media (max-width:900px){.grid,.row{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
-  .item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 4px 14px rgba(2,6,23,.05)}
-  .muted{color:var(--muted)} .meta{font-size:.92rem;color:var(--muted)}
-  input[type=text], input[type=date], input[type=password], textarea{
-    width:100%;background:#fff;color:var(--fg);border:1px solid var(--border);
-    border-radius:10px;padding:10px 12px;transition:border-color .15s,box-shadow .15s;
-  }
-  textarea{min-height:130px;resize:vertical}
-  input:focus, textarea:focus{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:600;transition:transform .08s, box-shadow .15s, background .15s}
-  .btn:active{transform:translateY(1px)} .btn[disabled]{opacity:.6;cursor:not-allowed}
-  .btn-primary{background:var(--green);color:#fff;box-shadow:0 6px 18px rgba(22,163,74,.25)}
-  .btn-primary:hover{background:var(--green-600)}
-  .btn-secondary{background:var(--gray-100)}
-  .btn-secondary:hover{background:var(--gray-200)}
-  .btn-danger{background:var(--red);color:#fff;box-shadow:0 6px 18px rgba(239,68,68,.22)}
-  .btn-danger:hover{background:var(--red-600)}
-  .btn-warning{background:var(--amber);color:#fff;box-shadow:0 6px 18px rgba(245,158,11,.22)}
-  .btn-warning:hover{background:var(--amber-600)}
-  .status{display:flex;align-items:center;gap:8px}
-  .dot{width:10px;height:10px;border-radius:999px;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 1.6s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-  footer{border-top:1px solid var(--border);margin-top:40px}
-  .api-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .pwd-row{display:flex;gap:8px;align-items:center}
+    :root { --fg:#0b1220; --muted:#6b7280; --card:#fff; --bg:#f6f7fb; --brand:#2563eb; --ok:#047857; --bad:#b91c1c; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:var(--brand);text-decoration:none}
+    header{background:#fff;border-bottom:1px solid #eceff5}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .brand{font-weight:700}
+    main .grid{display:grid;gap:16px;grid-template-columns:1fr;align-items:start}
+    @media (min-width: 1000px){ main .grid{grid-template-columns:1fr 1fr} }
+    .card{background:var(--card);border:1px solid #e8ebf2;border-radius:12px;padding:18px}
+    h1{font-size:28px;margin:10px 0 8px}
+    h2{font-size:20px;margin:0 0 14px}
+    label{font-size:14px;color:var(--muted);display:block;margin:10px 0 6px}
+    input,textarea{width:100%;padding:10px 12px;border:1px solid #d8dde7;border-radius:8px;background:#fff;font:inherit}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{appearance:none;border:0;border-radius:8px;padding:10px 14px;font-weight:600;background:var(--brand);color:#fff;cursor:pointer}
+    .btn.muted{background:#e5e7eb;color:#111}
+    .btn.danger{background:var(--bad);color:#fff}
+    .btn.small{padding:6px 10px;font-weight:600;font-size:14px;border-radius:6px}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .meta{color:var(--muted);font-size:14px;margin-top:2px}
+    ul{list-style:none;margin:0;padding:0}
+    li{padding:12px 0;border-top:1px solid #eef1f6}
+    li:first-child{border-top:0}
+    .status{font-weight:600}
+    .ok{color:var(--ok)}
+    .bad{color:var(--bad)}
+    .msg{margin-top:8px;font-size:14px}
   </style>
 </head>
 <body>
   <header>
-    <div class="wrap" style="display:flex;align-items:center;gap:16px;justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:12px">
-        <img src="/favicon.ico" alt="" width="20" height="20" />
-        <strong>LeaderTV</strong>
-      </div>
-      <nav>
+    <div class="wrap nav">
+      <div class="brand">LeaderTV</div>
+      <nav style="margin-left:auto;display:flex;gap:14px;">
         <a href="/">Начало</a>
-        <a href="/#news">Новини</a>
-        <a href="/#events">Събития</a>
-        <a href="/admin"><u>Админ</u></a>
+        <a href="/news">Новини</a>
+        <a href="/events">Събития</a>
+        <strong>Админ</strong>
       </nav>
     </div>
   </header>
@@ -69,351 +53,310 @@
   <main class="wrap">
     <h1>Админ панел</h1>
 
-    <!-- Вход / статус -->
-    <div class="card" style="margin-bottom:18px">
-      <div class="row" style="align-items:end">
-        <div>
-          <label class="muted">Админ ключ:</label>
-          <div class="pwd-row">
-            <input id="key" type="password" placeholder="въведи парола…" />
-            <button class="btn btn-secondary" id="togglePwd" type="button" aria-label="Покажи/скрий">Покажи</button>
-            <button class="btn btn-primary" id="loginBtn" type="button">Вход</button>
-            <button class="btn btn-secondary" id="logoutBtn" type="button">Изход</button>
-          </div>
-        </div>
-        <div>
-          <div class="api-row">
-            <span class="muted">API:</span>
-            <a id="apiLink" href="#" target="_blank" rel="noopener noreferrer"></a>
-            <span class="status" id="loginState"><span class="dot"></span><span>Влязъл</span></span>
-          </div>
-        </div>
+    <section class="card" style="margin-bottom:16px">
+      <div class="toolbar">
+        <label for="admin-key" style="margin:0">Админ ключ:</label>
+        <input id="admin-key" type="password" placeholder="въведи парола…" style="max-width:280px" />
+        <button class="btn muted small" id="toggle-pw" type="button">Покажи</button>
+        <button class="btn small" id="login-btn" type="button">Вход</button>
+        <button class="btn muted small" id="logout-btn" type="button">Изход</button>
+        <span style="margin-left:12px">API: <a id="api-link" href="#" target="_blank"></a> <span id="login-state" class="status bad">Не е влязъл</span></span>
       </div>
-    </div>
-
-    <!-- Публикуване -->
-    <section class="grid">
-      <div class="card">
-        <h2>Публикувай новина</h2>
-        <label class="muted">Заглавие</label>
-        <input id="nTitle" type="text" placeholder="Заглавие" />
-        <div class="row" style="margin-top:10px">
-          <div>
-            <label class="muted">Дата (YYYY-MM-DD)</label>
-            <input id="nDate" type="text" placeholder="YYYY-MM-DD" />
-          </div>
-        </div>
-        <div style="margin-top:10px">
-          <label class="muted">Текст</label>
-          <textarea id="nBody" placeholder="Текст на новината…"></textarea>
-        </div>
-        <div style="margin-top:12px">
-          <button id="publishNews" class="btn btn-primary">Публикувай</button>
-        </div>
-
-        <h2 style="margin-top:22px">Последни новини</h2>
-        <div id="newsList" style="display:grid;gap:12px"></div>
-        <p id="newsEmpty" class="muted" style="display:none">Няма записи.</p>
-      </div>
-
-      <div class="card">
-        <h2>Публикувай събитие</h2>
-        <label class="muted">Заглавие</label>
-        <input id="eTitle" type="text" placeholder="Заглавие" />
-        <div class="row" style="margin-top:10px">
-          <div>
-            <label class="muted">Дата</label>
-            <input id="eDate" type="text" placeholder="YYYY-MM-DD" />
-          </div>
-          <div>
-            <label class="muted">Локация</label>
-            <input id="eLocation" type="text" placeholder="Град/онлайн…" />
-          </div>
-        </div>
-        <div style="margin-top:12px">
-          <button id="publishEvent" class="btn btn-primary">Публикувай</button>
-        </div>
-
-        <h2 style="margin-top:22px">Предстоящи събития</h2>
-        <div id="eventsList" style="display:grid;gap:12px"></div>
-        <p id="eventsEmpty" class="muted" style="display:none">Няма записи.</p>
-      </div>
+      <div id="flash" class="msg"></div>
     </section>
+
+    <div class="grid">
+      <!-- NEWS -->
+      <section class="card">
+        <h2>Публикувай новина</h2>
+        <label>Заглавие</label>
+        <input id="n-title" />
+        <label>Дата (YYYY-MM-DD)</label>
+        <input id="n-date" placeholder="YYYY-MM-DD" />
+        <label>Текст</label>
+        <textarea id="n-body"></textarea>
+        <div class="toolbar" style="margin-top:10px">
+          <button class="btn" id="n-submit">Публикувай</button>
+          <button class="btn muted" id="n-reset" type="button">Изчисти</button>
+        </div>
+        <h2 style="margin-top:20px">Последни новини</h2>
+        <ul id="news-list"><li class="meta">Зареждане…</li></ul>
+      </section>
+
+      <!-- EVENTS -->
+      <section class="card">
+        <h2>Публикувай събитие</h2>
+        <label>Заглавие</label>
+        <input id="e-title" />
+        <div class="row">
+          <div>
+            <label>Дата (YYYY-MM-DD)</label>
+            <input id="e-date" placeholder="YYYY-MM-DD" />
+          </div>
+          <div>
+            <label>Локация</label>
+            <input id="e-location" placeholder="напр. София / Zoom" />
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:10px">
+          <button class="btn" id="e-submit">Публикувай</button>
+          <button class="btn muted" id="e-reset" type="button">Изчисти</button>
+        </div>
+        <h2 style="margin-top:20px">Предстоящи събития</h2>
+        <ul id="events-list"><li class="meta">Зареждане…</li></ul>
+      </section>
+    </div>
   </main>
 
-  <footer class="wrap">
-    <p class="muted">© 2025 LeaderTV. Всички права запазени.</p>
-  </footer>
+  <script>
+    (function(){
+      const API = 'https://leadertv-backend-production.up.railway.app/api';
 
-  <!-- ===== JS ===== -->
-  <script type="module">
-    // API base от Vercel/Vite env
-    const API_URL   = (import.meta?.env?.VITE_API_URL   ?? '').replace(/\/$/,'');
-    const API_PREF  =  import.meta?.env?.VITE_API_PREFIX ?? '/api';
-    const API_BASE  = (API_URL || '') + API_PREF;
+      // --- helpers
+      const $ = (sel) => document.querySelector(sel);
+      const flash = (text, ok=true) => {
+        const el = $('#flash');
+        el.textContent = text || '';
+        el.style.color = ok ? 'var(--ok)' : 'var(--bad)';
+        if (text) setTimeout(()=>{ el.textContent=''; }, 3500);
+      };
+      const fmtDate = (d) => {
+        if(!d) return '';
+        const t = new Date(d);
+        if (isNaN(t)) return d;
+        const y = t.getFullYear();
+        const m = String(t.getMonth()+1).padStart(2,'0');
+        const dd = String(t.getDate()).padStart(2,'0');
+        return `${y}-${m}-${dd}`;
+      };
+      const headers = () => {
+        const key = localStorage.getItem('adminKey') || '';
+        return {
+          'Content-Type': 'application/json',
+          'x-admin-key': key
+        };
+      };
 
-    // DOM
-    const keyInput = document.getElementById('key');
-    const togglePwd = document.getElementById('togglePwd');
-    const loginBtn  = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const apiLink   = document.getElementById('apiLink');
-    const loginState= document.getElementById('loginState');
-
-    const nTitle = document.getElementById('nTitle');
-    const nDate  = document.getElementById('nDate');
-    const nBody  = document.getElementById('nBody');
-    const publishNews = document.getElementById('publishNews');
-    const newsList = document.getElementById('newsList');
-    const newsEmpty = document.getElementById('newsEmpty');
-
-    const eTitle = document.getElementById('eTitle');
-    const eDate  = document.getElementById('eDate');
-    const eLocation = document.getElementById('eLocation');
-    const publishEvent = document.getElementById('publishEvent');
-    const eventsList = document.getElementById('eventsList');
-    const eventsEmpty= document.getElementById('eventsEmpty');
-
-    // Init UI
-    apiLink.textContent = API_BASE;
-    apiLink.href = API_BASE;
-
-    // Admin key в локално хранилище
-    const LS_KEY = 'leader_admin_key';
-    function getKey(){ return localStorage.getItem(LS_KEY) || ''; }
-    function setKey(v){ localStorage.setItem(LS_KEY, v || ''); }
-    function clearKey(){ localStorage.removeItem(LS_KEY); }
-
-    // Показване/скриване на парола
-    togglePwd.addEventListener('click', ()=>{
-      if(keyInput.type === 'password'){ keyInput.type = 'text'; togglePwd.textContent = 'Скрий'; }
-      else { keyInput.type = 'password'; togglePwd.textContent = 'Покажи'; }
-    });
-
-    // Логика на вход/изход
-    function reflectLogin(){
-      const have = !!getKey();
-      loginState.style.opacity = have ? '1' : '.4';
-      loginBtn.disabled = have;
-      logoutBtn.disabled = !have;
-    }
-    loginBtn.addEventListener('click', async ()=>{
-      const k = keyInput.value.trim();
-      if(!k){ alert('Въведи админ ключ.'); return; }
-      setKey(k);
-      reflectLogin();
-      alert('Влязъл.');
-    });
-    logoutBtn.addEventListener('click', ()=>{
-      clearKey();
-      reflectLogin();
-      alert('Излязъл.');
-    });
-
-    // Помощни
-    function escapeHTML(s=''){return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-    function escapeMultiline(s=''){return escapeHTML(s).replace(/\n/g,'<br/>')}
-
-    async function getJSON(path){
-      const r = await fetch(API_BASE + path, {headers:{'accept':'application/json'}});
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    }
-    async function sendJSON(method, path, body){
-      const r = await fetch(API_BASE + path, {
-        method,
-        headers:{
-          'content-type':'application/json',
-          'x-admin-key': getKey() || ''
-        },
-        body: body ? JSON.stringify(body) : undefined
-      });
-      if(!r.ok){
-        const t = await r.text().catch(()=> '');
-        throw new Error('HTTP '+r.status+' '+t);
+      function setLoginState(logged) {
+        $('#login-state').textContent = logged ? 'Влязъл' : 'Не е влязъл';
+        $('#login-state').className = 'status ' + (logged ? 'ok' : 'bad');
       }
-      return r.json().catch(()=> ({}));
-    }
 
-    // Рендер елемент за новина + действия
-    function newsItem(n){
-      const box = document.createElement('article'); box.className='item';
-      box.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
-          <strong>${escapeHTML(n.title)}</strong>
-          <span class="meta">${escapeHTML(n.date || '')}</span>
-        </div>
-        ${n.body ? `<div style="margin-top:6px">${escapeMultiline(n.body)}</div>` : ''}
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn btn-warning">Редакция</button>
-          <button class="btn btn-danger">Изтриване</button>
-        </div>
-      `;
-      const [editBtn, delBtn] = box.querySelectorAll('button');
+      // --- auth UI
+      $('#api-link').href = API;
+      $('#api-link').textContent = API;
+      const saved = localStorage.getItem('adminKey') || '';
+      if (saved) { $('#admin-key').value = saved; setLoginState(true); }
 
-      // Редакция (inline)
-      editBtn.addEventListener('click', ()=>{
-        const form = document.createElement('div');
-        form.className='item';
-        form.style.marginTop='10px';
-        form.innerHTML = `
-          <label class="muted">Заглавие</label>
-          <input type="text" value="${escapeHTML(n.title)}" />
-          <div class="row" style="margin-top:10px">
-            <div><label class="muted">Дата</label><input type="text" value="${escapeHTML(n.date || '')}" /></div>
-          </div>
-          <div style="margin-top:10px">
-            <label class="muted">Текст</label>
-            <textarea>${escapeHTML(n.body || '')}</textarea>
-          </div>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn btn-primary">Запази</button>
-            <button class="btn btn-secondary">Отказ</button>
-          </div>
-        `;
-        box.appendChild(form);
-        const [ti, da, ta] = form.querySelectorAll('input,textarea');
-        const [save, cancel] = form.querySelectorAll('button');
-
-        save.addEventListener('click', async ()=>{
-          try{
-            await sendJSON('PUT', `/news/${encodeURIComponent(n.id)}`, {
-              title: ti.value.trim(),
-              date:  da.value.trim(),
-              body:  ta.value.trim()
-            });
-            alert('Промените са записани.');
-            await reloadLists();
-          }catch(e){ alert('Грешка: '+e.message); }
-        });
-        cancel.addEventListener('click', ()=> form.remove());
+      $('#toggle-pw').addEventListener('click', () => {
+        const pw = $('#admin-key');
+        const show = pw.type === 'password';
+        pw.type = show ? 'text' : 'password';
+        $('#toggle-pw').textContent = show ? 'Скрий' : 'Покажи';
+      });
+      $('#login-btn').addEventListener('click', () => {
+        const k = $('#admin-key').value.trim();
+        if (!k) { flash('Моля, въведи парола.', false); return; }
+        localStorage.setItem('adminKey', k);
+        setLoginState(true);
+        flash('Влязъл.');
+      });
+      $('#logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('adminKey');
+        setLoginState(false);
+        flash('Изход.');
       });
 
-      // Изтриване
-      delBtn.addEventListener('click', async ()=>{
-        if(!confirm('Сигурни ли сте, че искате да изтриете тази новина?')) return;
-        try{
-          await sendJSON('DELETE', `/news/${encodeURIComponent(n.id)}`);
-          await reloadLists();
-        }catch(e){ alert('Грешка: '+e.message); }
-      });
-
-      return box;
-    }
-
-    function eventItem(ev){
-      const box = document.createElement('article'); box.className='item';
-      box.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
-          <strong>${escapeHTML(ev.title)}</strong>
-          <span class="meta">${escapeHTML(ev.date || '')}</span>
-        </div>
-        ${ev.location ? `<div class="meta" style="margin-top:6px">Локация: ${escapeHTML(ev.location)}</div>` : ''}
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn btn-warning">Редакция</button>
-          <button class="btn btn-danger">Изтриване</button>
-        </div>
-      `;
-      const [editBtn, delBtn] = box.querySelectorAll('button');
-
-      editBtn.addEventListener('click', ()=>{
-        const form = document.createElement('div');
-        form.className='item';
-        form.style.marginTop='10px';
-        form.innerHTML = `
-          <label class="muted">Заглавие</label>
-          <input type="text" value="${escapeHTML(ev.title)}" />
-          <div class="row" style="margin-top:10px">
-            <div><label class="muted">Дата</label><input type="text" value="${escapeHTML(ev.date || '')}" /></div>
-            <div><label class="muted">Локация</label><input type="text" value="${escapeHTML(ev.location || '')}" /></div>
-          </div>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn btn-primary">Запази</button>
-            <button class="btn btn-secondary">Отказ</button>
-          </div>
-        `;
-        box.appendChild(form);
-        const [ti, da, lo] = form.querySelectorAll('input');
-        const [save, cancel] = form.querySelectorAll('button');
-
-        save.addEventListener('click', async ()=>{
-          try{
-            await sendJSON('PUT', `/events/${encodeURIComponent(ev.id)}`, {
-              title: ti.value.trim(),
-              date:  da.value.trim(),
-              location: lo.value.trim()
-            });
-            alert('Промените са записани.');
-            await reloadLists();
-          }catch(e){ alert('Грешка: '+e.message); }
-        });
-        cancel.addEventListener('click', ()=> form.remove());
-      });
-
-      delBtn.addEventListener('click', async ()=>{
-        if(!confirm('Сигурни ли сте, че искате да изтриете това събитие?')) return;
-        try{
-          await sendJSON('DELETE', `/events/${encodeURIComponent(ev.id)}`);
-          await reloadLists();
-        }catch(e){ alert('Грешка: '+e.message); }
-      });
-
-      return box;
-    }
-
-    // Зареждане на списъците
-    async function reloadLists(){
-      try{
-        const [news, evs] = await Promise.all([ getJSON('/news'), getJSON('/events') ]);
-        newsList.innerHTML = '';
-        if(!news.length){ newsEmpty.style.display='block'; } else {
-          newsEmpty.style.display='none';
-          news.forEach(n => newsList.appendChild(newsItem(n)));
+      // --- load lists
+      async function loadNews() {
+        const ul = $('#news-list');
+        try {
+          const res = await fetch(`${API}/news`);
+          const data = await res.json();
+          const items = (data||[]).sort((a,b)=> String(b.date).localeCompare(String(a.date)));
+          ul.innerHTML='';
+          if (!items.length) { ul.innerHTML = '<li class="meta">Няма записи.</li>'; return; }
+          for (const n of items) {
+            ul.appendChild(renderNewsItem(n));
+          }
+        } catch(e) {
+          console.error(e); ul.innerHTML = '<li class="meta" style="color:#b00">Грешка при зареждане.</li>';
         }
-        eventsList.innerHTML = '';
-        if(!evs.length){ eventsEmpty.style.display='block'; } else {
-          eventsEmpty.style.display='none';
-          evs.forEach(e => eventsList.appendChild(eventItem(e)));
-        }
-      }catch(e){
-        console.error(e);
-        newsEmpty.style.display='block'; eventsEmpty.style.display='block';
       }
-    }
+      function renderNewsItem(n) {
+        const li = document.createElement('li');
+        const title = document.createElement('div');
+        title.style.fontWeight='600';
+        title.textContent = n.title || '(без заглавие)';
+        const meta = document.createElement('div');
+        meta.className='meta';
+        meta.textContent = fmtDate(n.date);
+        const body = document.createElement('div');
+        body.textContent = n.body || '';
+        body.style.marginTop='4px';
 
-    // Публикуване
-    publishNews.addEventListener('click', async ()=>{
-      if(!getKey()){ alert('Нужно е да сте влезли.'); return; }
-      try{
-        await sendJSON('POST','/news',{
-          title:nTitle.value.trim(),
-          date:nDate.value.trim(),
-          body:nBody.value.trim()
-        });
-        alert('Новината е публикувана.');
-        nTitle.value=''; nDate.value=''; nBody.value='';
-        await reloadLists();
-      }catch(e){ alert('Грешка: '+e.message); }
-    });
+        // actions
+        const bar = document.createElement('div');
+        bar.className='toolbar';
+        bar.style.marginTop='6px';
 
-    publishEvent.addEventListener('click', async ()=>{
-      if(!getKey()){ alert('Нужно е да сте влезли.'); return; }
-      try{
-        await sendJSON('POST','/events',{
-          title:eTitle.value.trim(),
-          date:eDate.value.trim(),
-          location:eLocation.value.trim()
-        });
-        alert('Събитието е публикувано.');
-        eTitle.value=''; eDate.value=''; eLocation.value='';
-        await reloadLists();
-      }catch(e){ alert('Грешка: '+e.message); }
-    });
+        const btnEdit = document.createElement('button');
+        btnEdit.className='btn muted small';
+        btnEdit.textContent='Редакция';
+        btnEdit.onclick = () => {
+          $('#n-title').value = n.title || '';
+          $('#n-date').value = n.date || '';
+          $('#n-body').value = n.body || '';
+          $('#n-submit').textContent = 'Запази';
+          $('#n-submit').dataset.id = n.id;
+          window.scrollTo({top:0,behavior:'smooth'});
+        };
 
-    // Старт
-    keyInput.value = getKey();
-    reflectLogin();
-    reloadLists();
+        const btnDel = document.createElement('button');
+        btnDel.className='btn danger small';
+        btnDel.textContent='Изтриване';
+        btnDel.onclick = async () => {
+          if (!confirm('Да изтрия ли тази новина?')) return;
+          const res = await fetch(`${API}/news/${n.id}`, { method:'DELETE', headers: headers() });
+          if (res.ok) { flash('Новината е изтрита.'); loadNews(); } else { flash('Грешка при изтриване.', false); }
+        };
+
+        bar.appendChild(btnEdit);
+        bar.appendChild(btnDel);
+
+        li.appendChild(title); li.appendChild(meta);
+        if (n.body) li.appendChild(body);
+        li.appendChild(bar);
+        return li;
+      }
+
+      async function loadEvents() {
+        const ul = $('#events-list');
+        try {
+          const res = await fetch(`${API}/events`);
+          const data = await res.json();
+          const items = (data||[]).sort((a,b)=> String(a.date).localeCompare(String(b.date)));
+          ul.innerHTML='';
+          if (!items.length) { ul.innerHTML = '<li class="meta">Няма записи.</li>'; return; }
+          for (const ev of items) {
+            ul.appendChild(renderEventItem(ev));
+          }
+        } catch(e) {
+          console.error(e); ul.innerHTML = '<li class="meta" style="color:#b00">Грешка при зареждане.</li>';
+        }
+      }
+      function renderEventItem(ev) {
+        const li = document.createElement('li');
+        const title = document.createElement('div');
+        title.style.fontWeight='600';
+        title.textContent = ev.title || '(без заглавие)';
+        const meta = document.createElement('div');
+        meta.className='meta';
+        meta.textContent = [fmtDate(ev.date), ev.location].filter(Boolean).join(' · ');
+
+        const bar = document.createElement('div');
+        bar.className='toolbar';
+        bar.style.marginTop='6px';
+
+        const btnEdit = document.createElement('button');
+        btnEdit.className='btn muted small';
+        btnEdit.textContent='Редакция';
+        btnEdit.onclick = () => {
+          $('#e-title').value = ev.title || '';
+          $('#e-date').value = ev.date || '';
+          $('#e-location').value = ev.location || '';
+          $('#e-submit').textContent = 'Запази';
+          $('#e-submit').dataset.id = ev.id;
+          window.scrollTo({top:0,behavior:'smooth'});
+        };
+
+        const btnDel = document.createElement('button');
+        btnDel.className='btn danger small';
+        btnDel.textContent='Изтриване';
+        btnDel.onclick = async () => {
+          if (!confirm('Да изтрия ли това събитие?')) return;
+          const res = await fetch(`${API}/events/${ev.id}`, { method:'DELETE', headers: headers() });
+          if (res.ok) { flash('Събитието е изтрито.'); loadEvents(); } else { flash('Грешка при изтриване.', false); }
+        };
+
+        bar.appendChild(btnEdit);
+        bar.appendChild(btnDel);
+
+        li.appendChild(title); li.appendChild(meta); li.appendChild(bar);
+        return li;
+      }
+
+      // create / update NEWS
+      async function upsertNews() {
+        const payload = {
+          title: $('#n-title').value.trim(),
+          date:  $('#n-date').value.trim(),
+          body:  $('#n-body').value.trim()
+        };
+        if (!payload.title || !payload.date) { flash('Заглавие и дата са задължителни.', false); return; }
+
+        const id = $('#n-submit').dataset.id;
+        const url = id ? `${API}/news/${id}` : `${API}/news`;
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(payload) });
+        if (res.ok) {
+          flash(id ? 'Новината е записана.' : 'Новината е публикувана.');
+          $('#n-submit').textContent = 'Публикувай';
+          delete $('#n-submit').dataset.id;
+          $('#n-title').value = ''; $('#n-date').value = ''; $('#n-body').value = '';
+          loadNews();
+        } else {
+          const err = await safeJson(res);
+          flash(err?.error || 'Грешка при запис.', false);
+        }
+      }
+
+      // create / update EVENTS
+      async function upsertEvent() {
+        const payload = {
+          title:    $('#e-title').value.trim(),
+          date:     $('#e-date').value.trim(),
+          location: $('#e-location').value.trim()
+        };
+        if (!payload.title || !payload.date) { flash('Заглавие и дата са задължителни.', false); return; }
+
+        const id = $('#e-submit').dataset.id;
+        const url = id ? `${API}/events/${id}` : `${API}/events`;
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(payload) });
+        if (res.ok) {
+          flash(id ? 'Събитието е записано.' : 'Събитието е публикувано.');
+          $('#e-submit').textContent = 'Публикувай';
+          delete $('#e-submit').dataset.id;
+          $('#e-title').value = ''; $('#e-date').value = ''; $('#e-location').value = '';
+          loadEvents();
+        } else {
+          const err = await safeJson(res);
+          flash(err?.error || 'Грешка при запис.', false);
+        }
+      }
+
+      async function safeJson(res){
+        try { return await res.json(); } catch { return null; }
+      }
+
+      // buttons
+      $('#n-submit').addEventListener('click', upsertNews);
+      $('#n-reset').addEventListener('click', () => {
+        $('#n-title').value=''; $('#n-date').value=''; $('#n-body').value='';
+        $('#n-submit').textContent='Публикувай'; delete $('#n-submit').dataset.id;
+      });
+
+      $('#e-submit').addEventListener('click', upsertEvent);
+      $('#e-reset').addEventListener('click', () => {
+        $('#e-title').value=''; $('#e-date').value=''; $('#e-location').value='';
+        $('#e-submit').textContent='Публикувай'; delete $('#e-submit').dataset.id;
+      });
+
+      // initial load
+      loadNews();
+      loadEvents();
+    })();
   </script>
 </body>
 </html>
