@@ -1,3 +1,5 @@
+import FlagsMosaic from "../components/FlagsMosaic";
+import { countries } from "../data/countries";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FlagsMosaic from "../components/FlagsMosaic";

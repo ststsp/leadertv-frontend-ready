@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { getCountryByCode } from "../data/countries";
 
 export default function CountryPage() {
@@ -8,63 +8,64 @@ export default function CountryPage() {
   if (!country) {
     return (
       <div className="page">
-        <h1>Няма такава държава</h1>
-        <p>
-          Върни се към <Link to="/">Начало</Link>.
-        </p>
+        <h1>Неизвестна държава</h1>
+        <p className="muted">Код: {code}</p>
       </div>
     );
   }
 
   return (
     <div className="page">
-      <header className="country-hero">
-        <img src={country.flag} alt={country.name} />
+      <div className="country-hero" style={{ display: "flex", gap: 16, alignItems: "center", marginBottom: 20 }}>
+        <img
+          src={country.flag}
+          alt={country.name}
+          style={{ width: 64, height: 48, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(0,0,0,.1)" }}
+        />
         <div>
-          <h1>{country.name}</h1>
-          <p className="muted">
-            Местни групи, контакти и връзки за {country.name}.
-          </p>
+          <h1 style={{ margin: 0 }}>{country.name}</h1>
+          <div className="muted">Местни групи (МИГ/LEADER)</div>
         </div>
-      </header>
+      </div>
 
       {country.groups?.length ? (
-        <ul className="groups-list">
-          {country.groups.map((g, idx) => (
-            <li key={idx} className="group-card">
-              <div className="group-header">
-                <h3>{g.name}</h3>
-                {g.city && <span className="badge">{g.city}</span>}
+        <div className="groups-list" style={{ display: "grid", gap: 16 }}>
+          {country.groups.map((g, i) => (
+            <div
+              key={`${g.name}-${i}`}
+              className="group-card"
+              style={{
+                background: "#fff",
+                borderRadius: 12,
+                padding: 16,
+                border: "1px solid rgba(0,0,0,.06)",
+                boxShadow: "0 6px 16px rgba(0,0,0,.06)",
+              }}
+            >
+              <div
+                className="group-header"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}
+              >
+                <h3 style={{ margin: 0 }}>{g.name}</h3>
+                {g.city ? (
+                  <span className="badge" style={{ background: "#eef6ff", color: "#2563eb", borderRadius: 8, padding: "2px 8px", fontSize: 12 }}>
+                    {g.city}
+                  </span>
+                ) : null}
               </div>
-              {(g.site || g.facebook || g.contact) ? (
-                <ul className="links">
-                  {g.site && (
-                    <li>
-                      <a href={g.site} target="_blank" rel="noreferrer">Сайт</a>
-                    </li>
-                  )}
-                  {g.facebook && (
-                    <li>
-                      <a href={g.facebook} target="_blank" rel="noreferrer">
-                        Facebook
-                      </a>
-                    </li>
-                  )}
-                  {g.contact && <li>Имейл: {g.contact}</li>}
-                </ul>
+              {g.site ? (
+                <a href={g.site} target="_blank" rel="noreferrer" style={{ color: "#2563eb" }}>
+                  {g.site}
+                </a>
               ) : (
-                <p className="muted">(Няма въведени линкове засега)</p>
+                <span className="muted">Няма сайт</span>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       ) : (
-        <p className="muted">Все още няма въведени групи.</p>
+        <p className="muted">Няма въведени групи.</p>
       )}
-
-      <div style={{ marginTop: 24 }}>
-        <Link className="btn" to="/">← Обратно към начало</Link>
-      </div>
     </div>
   );
 }
