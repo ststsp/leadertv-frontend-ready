@@ -1,163 +1,67 @@
-:root {
-  --card-bg: #ffffff;
-  --card-bd: rgba(0,0,0,.06);
-  --muted: #6b7280;
-  --text: #0f172a;
-  --shadow-sm: 0 6px 16px rgba(0,0,0,.06);
-  --shadow-md: 0 10px 22px rgba(0,0,0,.12);
-  --accent: #22c55e;
+/* Reset & базови променливи */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  color: #0f172a;
+  background: #f7f8fb;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.flags-wrap {
-  margin-top: 1.25rem; /* 20px */
-}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
 
-.flags-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-@media (min-width: 640px) {
-  .flags-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-@media (min-width: 1024px) {
-  .flags-grid {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
-  }
-}
-
-.flag-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card-bg);
-  border-radius: 10px;
-  padding: 8px;
-  border: 1px solid var(--card-bd);
-  box-shadow: var(--shadow-sm);
-  transition: transform .12s ease, box-shadow .12s ease;
-}
-
-.flag-btn:hover,
-.flag-btn:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  outline: none;
-}
-
-.flag-btn img {
-  display: block;
-  width: 44px;
-  height: 32px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
-.page {
+.container, .page {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 16px;
 }
 
-.country-hero {
-  display: flex;
-  gap: 16px;
-  align-items: center;
+/* Хедърът/геро секция */
+.hero {
+  background: linear-gradient(180deg, #eaf9e9 0%, rgba(234,249,233,0) 80%);
+  border-bottom: 1px solid #e3efe2;
+  padding: 28px 16px;
   margin-bottom: 20px;
 }
-.country-hero img {
-  width: 64px;
-  height: 48px;
-  border-radius: 6px;
-  border: 1px solid var(--card-bd);
+.hero h1 {
+  margin: 0 0 6px 0;
+  font-size: 34px;
 }
-.country-hero h1 {
-  margin: 0;
-}
-.muted {
-  color: var(--muted);
-}
+.hero p { margin: 0; color: #475569; }
 
-.groups-list {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: 1fr;
-}
-@media (min-width: 768px) {
-  .groups-list {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.group-card {
-  border: 1px solid var(--card-bd);
+/* Карти / панели */
+.card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.06);
   border-radius: 12px;
-  background: var(--card-bg);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
 }
 
-.group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 8px;
+/* Мрежи */
+.grid-2 {
+  display: grid;
+  gap: 20px;
 }
-.group-header h3 {
-  margin: 0;
+@media (min-width: 900px){
+  .grid-2 { grid-template-columns: 1fr 1fr; }
 }
+
+/* Флаг мозайка (визуални класове; самият layout е inline в компонента за максимум съвместимост) */
+.flags-wrap { margin-top: 12px; }
+.flag-btn { transition: transform .08s ease; }
+.flag-btn:hover { transform: translateY(-2px); }
+
+/* UI дреболии */
+.muted { color: #64748b; }
 .badge {
   display: inline-block;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: var(--text);
   font-size: 12px;
-}
-.links {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.links a {
-  color: #2563eb;
-  text-decoration: none;
-}
-.links a:hover {
-  text-decoration: underline;
-}
-
-.btn {
-  display: inline-block;
-  background: #f1f5f9;
-  border: 1px solid var(--card-bd);
-  padding: 8px 12px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: var(--text);
-}
-.btn:hover {
-  background: #e2e8f0;
-}
-
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-bd);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-}
-.card-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--card-bd);
-  font-weight: 600;
-}
-.card-body {
-  padding: 14px 16px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #3730a3;
 }
