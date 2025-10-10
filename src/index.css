@@ -19,20 +19,107 @@ img { max-width: 100%; display: block; }
   padding: 16px;
 }
 
-/* Хедърът/геро секция */
+/* ---- HERO (общи) ---- */
 .hero {
-  background: linear-gradient(180deg, #eaf9e9 0%, rgba(234,249,233,0) 80%);
-  border-bottom: 1px solid #e3efe2;
-  padding: 28px 16px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  padding: 20px 0;
   margin-bottom: 20px;
 }
-.hero h1 {
-  margin: 0 0 6px 0;
-  font-size: 34px;
-}
-.hero p { margin: 0; color: #475569; }
 
-/* Карти / панели */
+/* Зелен фон + разхвърляни знамена */
+.hero--green {
+  background: linear-gradient(180deg, #14c94a 0%, #18d251 24%, #eaf9e9 100%);
+  color: #06330f;
+}
+.hero-flags {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 36px;
+}
+.hero-content {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.hero-content h1 {
+  margin: 0 0 8px 0;
+  font-size: clamp(28px, 3.6vw, 40px);
+  color: #083a12;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+.hero-content p {
+  margin: 0 0 14px 0;
+  color: #0b4b18;
+}
+
+/* CTA бутони */
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  transition: transform .06s ease, box-shadow .12s ease, background .12s;
+}
+.btn + .btn { margin-left: 10px; }
+
+.btn-light {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+}
+.btn-light:hover { transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  border-color: rgba(255,255,255,.7);
+  color: #083a12;
+  backdrop-filter: blur(2px);
+}
+.btn-outline:hover {
+  background: rgba(255,255,255,.15);
+}
+
+/* Двете страни със знамена */
+.flags-side {
+  position: absolute;
+  top: 20px;
+  width: 240px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  pointer-events: none; /* само флаг-картите приемат клик */
+}
+.flags-side.left { left: 10px; }
+.flags-side.right { right: 10px; }
+
+.flag-card {
+  pointer-events: auto;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  padding: 6px;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+.flag-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3; /* помага за стабилност при различни svg */
+  object-fit: cover;
+  border-radius: 4px;
+}
+.flag-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,.18);
+}
+
+/* Скриваме флаговете на малки екрани */
+@media (max-width: 900px) {
+  .flags-side { display: none; }
+}
+
+/* ---- Карти / панели ---- */
 .card {
   background: #fff;
   border: 1px solid rgba(0,0,0,.06);
@@ -41,7 +128,7 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 6px 16px rgba(0,0,0,.06);
 }
 
-/* Мрежи */
+/* ---- Мрежи ---- */
 .grid-2 {
   display: grid;
   gap: 20px;
@@ -50,12 +137,7 @@ img { max-width: 100%; display: block; }
   .grid-2 { grid-template-columns: 1fr 1fr; }
 }
 
-/* Флаг мозайка (визуални класове; самият layout е inline в компонента за максимум съвместимост) */
-.flags-wrap { margin-top: 12px; }
-.flag-btn { transition: transform .08s ease; }
-.flag-btn:hover { transform: translateY(-2px); }
-
-/* UI дреболии */
+/* ---- Дреболии ---- */
 .muted { color: #64748b; }
 .badge {
   display: inline-block;

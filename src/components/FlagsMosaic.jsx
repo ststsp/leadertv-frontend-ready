@@ -1,14 +1,9 @@
 import { Link } from "react-router-dom";
 
-/**
- * Мозайка от знамена, съвместима с твоя countries.js:
- * [{ code, name, flag, groups: [...] }, ...]
- */
 export default function FlagsMosaic({ countries = [] }) {
   if (!countries.length) return null;
 
-  // Responsive fallback (ако CSS не е зареден)
-  const responsive = `
+    const responsive = `
     @media (min-width:640px){ .__flags { grid-template-columns: repeat(6,minmax(0,1fr)) } }
     @media (min-width:1024px){ .__flags { grid-template-columns: repeat(10,minmax(0,1fr)) } }
   `;
