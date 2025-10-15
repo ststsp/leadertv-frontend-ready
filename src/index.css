@@ -1,99 +1,174 @@
-/* ===== Reset / базови стилове ===== */
-* { box-sizing: border-box; }
-:root {
-  --bg: #f7f9fb;
-  --surface: #ffffff;
-  --text: #12212d;
-  --muted: #6b7a8b;
-  --brand: #0ea5e9;        /* синьо за линкове/hover */
-  --accent: #16a34a;       /* зелено за заглавния банер */
-  --shadow: 0 10px 25px rgba(2, 6, 23, 0.05);
-  --radius: 14px;
-}
-html, body, #root { height: 100%; }
-body {
-  margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: var(--text); background: var(--bg);
+/* ====== Base / Reset ====== */
+:root{
+  --bg: #f6faf7;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --brand: #16a34a;
+  --brand-weak:#dcfce7;
+  --ring: rgba(22,163,74,.25);
+  --shadow: 0 10px 30px rgba(2,6,23,.06);
+  --radius: 16px;
 }
 
-/* ===== Контейнери/карти ===== */
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 18px 20px;
+*{ box-sizing: border-box; }
+html,body,#root{ height: 100%; }
+body{
+  margin:0;
+  color:var(--ink);
+  background:var(--bg);
+  font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
-/* ===== Хедър (ако проектът има такъв — не пречи) ===== */
-.header-brand { font-weight: 800; letter-spacing: .4px; }
-
-/* ===== Герой секция (светло зелена лента) ===== */
-.hero {
-  background: linear-gradient(180deg, rgba(22,163,74,.12), transparent 70%);
-  padding: 32px 0 18px;
-  margin-bottom: 14px;
+/* ====== Layout helpers ====== */
+.wrap{
+  max-width: 1180px;
+  margin-inline:auto;
+  padding-inline: 20px;
 }
-.hero h1 {
-  margin: 0 0 8px; font-size: clamp(28px, 3.3vw, 42px);
-}
-.hero p  { margin: 0; color: var(--muted); font-size: 15px; }
 
-/* ===== Мозайка със знамена ===== */
-.flags-grid {
-  margin: 10px auto 26px;
+.section{
+  padding-block: 28px;
+}
+
+/* ====== Hero ====== */
+.hero{
+  background: linear-gradient(180deg, #e9f7ee 0%, rgba(233,247,238,0) 100%);
+  padding: 26px 0 6px;
+  margin-bottom: 8px;
+}
+.hero h1{
+  font-size: clamp(28px, 3.3vw, 40px);
+  line-height: 1.1;
+  margin: 0 0 6px;
+  letter-spacing:.2px;
+}
+.hero p{
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+/* ====== Flag grid ====== */
+.flag-grid{
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
   gap: 14px;
+  margin: 10px 0 26px;
 }
-.flag-tile {
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fff;
-  transition: transform .2s ease, box-shadow .2s ease;
+
+.flag-card{
+  background: var(--panel);
   box-shadow: var(--shadow);
+  border-radius: 18px;
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align:center;
   cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  border: 1px solid rgba(15,23,42,.04);
 }
-.flag-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(2,6,23,.1); }
-.flag-tile img {
-  width: 100%; height: 64px; object-fit: cover; display: block;
+.flag-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(2,6,23,.08);
 }
-.flag-tile .tile-caption {
-  padding: 8px 10px;
+.flag-card img{
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(2,6,23,.10);
+}
+.flag-card span{
+  margin-top: 8px;
   font-weight: 600;
   font-size: 14px;
 }
 
-/* ===== Две колони „Последни новини / Предстоящи събития“ ===== */
-.columns {
+/* ====== Cards row (Новини / Събития) ====== */
+.cards{
   display: grid;
-  gap: 18px;
   grid-template-columns: 1fr;
-  margin: 10px 0 32px;
+  gap: 18px;
+  margin-bottom: 28px;
 }
-@media (min-width: 900px) {
-  .columns { grid-template-columns: 1fr 1fr; }
+@media (min-width: 900px){
+  .cards{ grid-template-columns: 1fr 1fr; }
 }
-.section-title {
-  margin: 0 0 10px;
-  font-size: 18px; font-weight: 800; letter-spacing: .3px;
-}
-.list { display: grid; gap: 12px; }
-.item {
-  padding: 10px 12px; border-radius: 12px; background: #fafcff; border: 1px solid #eef2f7;
-}
-.item .title { font-weight: 700; margin: 0 0 4px; }
-.item .meta  { color: var(--muted); font-size: 13px; }
 
-/* ===== Линкове ===== */
-a { color: var(--brand); text-decoration: none; }
-a:hover { text-decoration: underline; }
+.card{
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(15,23,42,.06);
+  overflow: hidden;
+}
 
-/* ===== Footer ===== */
-.footer {
+.card-head{
+  display:flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(15,23,42,.06);
+}
+.card-title{
+  margin:0;
+  font-size: 18px;
+}
+.badge{
+  background: var(--brand-weak);
+  color: var(--brand);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card-body{ padding: 12px 16px 16px; }
+
+/* list of items */
+.list{
+  display: grid;
+  gap: 12px;
+}
+.item{
+  display:grid;
+  gap:4px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(15,23,42,.06);
+}
+.item:last-child{ border-bottom: none; }
+.item-title{
+  margin:0;
+  font-weight: 600;
+}
+.item-date{
   color: var(--muted);
-  text-align: center;
-  padding: 24px 0 40px;
-  font-size: 14px;
+  font-size: 13px;
+}
+.item-text{
+  margin:0;
+  color:#1f2937;
+}
+
+/* Utilities / links */
+.link{
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 600;
+}
+.link:hover{ text-decoration: underline; }
+
+.center{ text-align:center; }
+.skeleton{
+  background: linear-gradient(90deg,#f2f5f7 25%,#e9eef2 37%,#f2f5f7 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: 8px;
+  height: 14px;
+}
+@keyframes shimmer{
+  0%{ background-position: 100% 0; }
+  100%{ background-position: 0 0; }
 }

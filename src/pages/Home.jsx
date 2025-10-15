@@ -1,103 +1,159 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { countries } from "../data/countries";
 
-/**
- * Без външни зависимости: четем бекенда директно от Vite env променливи.
- * Работи и ако вече имаш services/api.js – този компонент не го изисква.
- */
-const API_BASE = (() => {
-  const base = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-  const prefix = (import.meta.env.VITE_API_PREFIX || "/api").replace(/^\/*/, "/");
-  return `${base}${prefix}`;
-})();
+// Ще се опитаме да ползваме services/api, ако го има.
+// Ако липсва/преименуван е – падаме към fetch('/api/...').
+let api = {};
+try { api = await import("../services/api"); } catch { /* no-op */ }
+
+const fmtBG = (d) =>
+  new Date(d).toLocaleDateString("bg-BG", { year: "numeric", month: "2-digit", day: "2-digit" });
+
+const sortByDateDesc = (arr, field = "date") =>
+  [...(arr || [])].sort(
+    (a, b) => new Date(b[field]).getTime() - new Date(a[field]).getTime()
+  );
 
 export default function Home() {
-  const [news, setNews] = useState([]);
-  const [events, setEvents] = useState([]);
-  const navigate = useNavigate();
+  const nav = useNavigate();
 
+  // --- data state
+  const [news, setNews] = useState({ items: [], loading: true });
+  const [events, setEvents] = useState({ items: [], loading: true });
+
+  // --- load
   useEffect(() => {
-    // новини
-    fetch(`${API_BASE}/news`)
-      .then(r => r.ok ? r.json() : [])
-      .then(data => Array.isArray(data) ? setNews(data.slice(0, 5)) : setNews([]))
-      .catch(() => setNews([]));
+    const getNews = async () => {
+      try {
+        const data = api.getNews
+          ? await api.getNews()
+          : await (await fetch("/api/news")).json();
+        setNews({ items: sortByDateDesc(data).slice(0, 5), loading: false });
+      } catch {
+        setNews({ items: [], loading: false });
+      }
+    };
 
-    // събития
-    fetch(`${API_BASE}/events`)
-      .then(r => r.ok ? r.json() : [])
-      .then(data => Array.isArray(data) ? setEvents(data.slice(0, 5)) : setEvents([]))
-      .catch(() => setEvents([]));
+    const getEvents = async () => {
+      try {
+        const data = api.getEvents
+          ? await api.getEvents()
+          : await (await fetch("/api/events")).json();
+        setEvents({ items: sortByDateDesc(data).slice(0, 5), loading: false });
+      } catch {
+        setEvents({ items: [], loading: false });
+      }
+    };
+
+    getNews();
+    getEvents();
   }, []);
 
-  // Стабилен ред от знамена – по код.
-  const countryTiles = useMemo(
-    () => [...countries].sort((a, b) => a.code.localeCompare(b.code)),
-    []
-  );
+  const totalNews = news.items.length;
 
   return (
     <>
-      {/* Герой */}
-      <section className="hero">
-        <div className="container">
+      {/* HERO */}
+      <div className="hero">
+        <div className="wrap">
           <h1>Добре дошли в LeaderTV</h1>
           <p>Платформа за новини и събития на МИГ и партньорски организации.</p>
 
-          {/* Мозайка със знамена (бутон → /country/:code) */}
-          <div className="flags-grid">
-            {countryTiles.map(c => (
-              <div
+          {/* FLAGS GRID */}
+          <div className="flag-grid">
+            {countries.map((c) => (
+              <button
                 key={c.code}
-                className="flag-tile"
-                role="button"
-                onClick={() => navigate(`/country/${c.code}`)}
-                title={`${c.name} — виж МИГ групите`}
+                className="flag-card"
+                onClick={() => nav(`/country/${c.code}`)}
+                aria-label={c.name}
               >
                 <img src={c.flag} alt={c.name} loading="lazy" />
-                <div className="tile-caption">{c.name}</div>
-              </div>
+                <span>{c.name}</span>
+              </button>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Две колони */}
-      <section>
-        <div className="container columns">
-          <div className="card">
-            <h3 className="section-title">Последни новини</h3>
-            <div className="list">
-              {news.length === 0 && <div className="item">Няма записи.</div>}
-              {news.map(n => (
-                <article key={n.id} className="item">
-                  <div className="title">{n.title}</div>
-                  {n.date && <div className="meta">{n.date}</div>}
-                  {n.body && <div>{n.body}</div>}
-                </article>
-              ))}
+      {/* CONTENT ROW */}
+      <div className="wrap section">
+        <div className="cards">
+          {/* NEWS */}
+          <section className="card">
+            <header className="card-head">
+              <h2 className="card-title">
+                Последни новини{" "}
+                {totalNews > 0 && <span className="badge">{totalNews}</span>}
+              </h2>
+              <Link className="link" to="/news">Всички →</Link>
+            </header>
+            <div className="card-body">
+              {news.loading ? (
+                <SkeletonList />
+              ) : news.items.length ? (
+                <ul className="list">
+                  {news.items.map((n) => (
+                    <li className="item" key={n.id || n._id || n.title}>
+                      <h3 className="item-title">{n.title}</h3>
+                      <div className="item-date">{fmtBG(n.date)}</div>
+                      {n.body && <p className="item-text">{n.body}</p>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted">Няма записи.</p>
+              )}
             </div>
-          </div>
+          </section>
 
-          <div className="card">
-            <h3 className="section-title">Предстоящи събития</h3>
-            <div className="list">
-              {events.length === 0 && <div className="item">Няма записи.</div>}
-              {events.map(e => (
-                <article key={e.id} className="item">
-                  <div className="title">{e.title}</div>
-                  <div className="meta">
-                    {e.date || ""}{e.location ? ` • ${e.location}` : ""}
-                  </div>
-                </article>
-              ))}
+          {/* EVENTS */}
+          <section className="card">
+            <header className="card-head">
+              <h2 className="card-title">Предстоящи събития</h2>
+              <Link className="link" to="/events">Всички →</Link>
+            </header>
+            <div className="card-body">
+              {events.loading ? (
+                <SkeletonList />
+              ) : events.items.length ? (
+                <ul className="list">
+                  {events.items.map((e) => (
+                    <li className="item" key={e.id || e._id || e.title}>
+                      <h3 className="item-title">{e.title}</h3>
+                      <div className="item-date">{fmtBG(e.date)}</div>
+                      {e.location && (
+                        <p className="item-text">Локация: {e.location}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted">Няма записи.</p>
+              )}
             </div>
-          </div>
+          </section>
         </div>
-      </section>
-
-      <footer className="footer">© 2025 LeaderTV. Всички права запазени.</footer>
+      </div>
     </>
+  );
+}
+
+/* ---- tiny skeleton for loading ---- */
+function SkeletonList() {
+  return (
+    <div className="list">
+      <div className="item">
+        <div className="skeleton" style={{ width: "60%" }} />
+        <div className="skeleton" style={{ width: "30%", height: 12 }} />
+        <div className="skeleton" style={{ width: "90%" }} />
+      </div>
+      <div className="item">
+        <div className="skeleton" style={{ width: "55%" }} />
+        <div className="skeleton" style={{ width: "28%", height: 12 }} />
+        <div className="skeleton" style={{ width: "80%" }} />
+      </div>
+    </div>
   );
 }
