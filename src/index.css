@@ -1,214 +1,99 @@
-/* Reset & базови променливи */
+/* ===== Reset / базови стилове ===== */
 * { box-sizing: border-box; }
+:root {
+  --bg: #f7f9fb;
+  --surface: #ffffff;
+  --text: #12212d;
+  --muted: #6b7a8b;
+  --brand: #0ea5e9;        /* синьо за линкове/hover */
+  --accent: #16a34a;       /* зелено за заглавния банер */
+  --shadow: 0 10px 25px rgba(2, 6, 23, 0.05);
+  --radius: 14px;
+}
 html, body, #root { height: 100%; }
 body {
-  margin: 0;
-  color: #0f172a;
-  background: #f7f8fb;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text); background: var(--bg);
 }
 
-a { color: inherit; text-decoration: none; }
-img { max-width: 100%; display: block; }
-
-.container, .page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-/* ---- HERO (общи) ---- */
-.hero {
-  border-bottom: 1px solid rgba(0,0,0,.06);
-  padding: 20px 0;
-  margin-bottom: 20px;
-}
-
-/* Зелен фон + разхвърляни знамена */
-.hero--green {
-  background: linear-gradient(180deg, #14c94a 0%, #18d251 24%, #eaf9e9 100%);
-  color: #06330f;
-}
-.hero-flags {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 16px 36px;
-}
-.hero-content {
-  text-align: center;
-  max-width: 760px;
-  margin: 0 auto;
-}
-.hero-content h1 {
-  margin: 0 0 8px 0;
-  font-size: clamp(28px, 3.6vw, 40px);
-  color: #083a12;
-  text-shadow: 0 1px 0 rgba(255,255,255,.35);
-}
-.hero-content p {
-  margin: 0 0 14px 0;
-  color: #0b4b18;
-}
-
-/* CTA бутони */
-.btn {
-  display: inline-block;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  font-weight: 600;
-  transition: transform .06s ease, box-shadow .12s ease, background .12s;
-}
-.btn + .btn { margin-left: 10px; }
-
-.btn-light {
-  background: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 6px 16px rgba(0,0,0,.12);
-}
-.btn-light:hover { transform: translateY(-1px); }
-
-.btn-outline {
-  background: transparent;
-  border-color: rgba(255,255,255,.7);
-  color: #083a12;
-  backdrop-filter: blur(2px);
-}
-.btn-outline:hover {
-  background: rgba(255,255,255,.15);
-}
-
-/* Двете страни със знамена */
-.flags-side {
-  position: absolute;
-  top: 20px;
-  width: 240px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  pointer-events: none; /* само флаг-картите приемат клик */
-}
-.flags-side.left { left: 10px; }
-.flags-side.right { right: 10px; }
-
-.flag-card {
-  pointer-events: auto;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid rgba(0,0,0,.08);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
-  padding: 6px;
-  transition: transform .08s ease, box-shadow .12s ease;
-}
-.flag-card img {
-  width: 100%;
-  aspect-ratio: 4 / 3; /* помага за стабилност при различни svg */
-  object-fit: cover;
-  border-radius: 4px;
-}
-.flag-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0,0,0,.18);
-}
-
-/* Скриваме флаговете на малки екрани */
-@media (max-width: 900px) {
-  .flags-side { display: none; }
-}
-
-/* ---- Карти / панели ---- */
+/* ===== Контейнери/карти ===== */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 .card {
-  background: #fff;
-  border: 1px solid rgba(0,0,0,.06);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
 }
 
-/* ---- Мрежи ---- */
-.grid-2 {
+/* ===== Хедър (ако проектът има такъв — не пречи) ===== */
+.header-brand { font-weight: 800; letter-spacing: .4px; }
+
+/* ===== Герой секция (светло зелена лента) ===== */
+.hero {
+  background: linear-gradient(180deg, rgba(22,163,74,.12), transparent 70%);
+  padding: 32px 0 18px;
+  margin-bottom: 14px;
+}
+.hero h1 {
+  margin: 0 0 8px; font-size: clamp(28px, 3.3vw, 42px);
+}
+.hero p  { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* ===== Мозайка със знамена ===== */
+.flags-grid {
+  margin: 10px auto 26px;
   display: grid;
-  gap: 20px;
-}
-@media (min-width: 900px){
-  .grid-2 { grid-template-columns: 1fr 1fr; }
-}
-
-/* ---- Дреболии ---- */
-.muted { color: #64748b; }
-.badge {
-  display: inline-block;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: #eef2ff;
-  color: #3730a3;
-}
-/* ===== Country Page ===== */
-.country-hero {
-  background: linear-gradient(180deg, #eaf9e9 0%, #f6fff6 100%);
-  border-bottom: 1px solid rgba(0,0,0,.06);
-}
-.country-hero__inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
   gap: 14px;
 }
-.country-title { display: flex; align-items: center; gap: 12px; }
-.country-title h1 { margin: 0; font-size: clamp(22px, 3vw, 32px); }
-.country-flag {
-  width: 56px;
-  height: 42px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid rgba(0,0,0,.08);
-  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+.flag-tile {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
   background: #fff;
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: var(--shadow);
+  cursor: pointer;
 }
-.country-meta { display: flex; align-items: center; gap: 10px; }
-
-.input {
-  width: 100%;
-  border: 1px solid rgba(0,0,0,.12);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 16px;
-  outline: none;
-  background: #fff;
+.flag-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(2,6,23,.1); }
+.flag-tile img {
+  width: 100%; height: 64px; object-fit: cover; display: block;
 }
-.input:focus {
-  border-color: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22,163,74,.1);
+.flag-tile .tile-caption {
+  padding: 8px 10px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.grid-3 {
+/* ===== Две колони „Последни новини / Предстоящи събития“ ===== */
+.columns {
   display: grid;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 18px;
+  grid-template-columns: 1fr;
+  margin: 10px 0 32px;
 }
 @media (min-width: 900px) {
-  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .columns { grid-template-columns: 1fr 1fr; }
 }
+.section-title {
+  margin: 0 0 10px;
+  font-size: 18px; font-weight: 800; letter-spacing: .3px;
+}
+.list { display: grid; gap: 12px; }
+.item {
+  padding: 10px 12px; border-radius: 12px; background: #fafcff; border: 1px solid #eef2f7;
+}
+.item .title { font-weight: 700; margin: 0 0 4px; }
+.item .meta  { color: var(--muted); font-size: 13px; }
 
-.group-card { display: flex; gap: 12px; flex-direction: column; }
-.group-card__head {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-}
-.group-title { margin: 0; font-size: 18px; line-height: 1.25; }
-.chip {
-  background: #eef2ff;
-  color: #3730a3;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 12px;
-}
+/* ===== Линкове ===== */
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-/* малки подобрения за бутони на карти */
-.group-card .btn { align-self: flex-start; }
+/* ===== Footer ===== */
+.footer {
+  color: var(--muted);
+  text-align: center;
+  padding: 24px 0 40px;
+  font-size: 14px;
+}

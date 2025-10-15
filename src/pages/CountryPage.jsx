@@ -1,118 +1,53 @@
-import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getCountryByCode } from "../data/countries";
 
 export default function CountryPage() {
   const { code } = useParams();
   const country = getCountryByCode(code);
-  const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    if (country) {
-      document.title = `LeaderTV – ${country.name}`;
-      window.scrollTo(0, 0);
-    } else {
-      document.title = "LeaderTV – Държавата не е открита";
-    }
-  }, [country]);
 
   if (!country) {
     return (
-      <main className="page">
-        <div className="card" style={{ textAlign: "center" }}>
-          <h2 style={{ marginTop: 0 }}>Държавата не е открита</h2>
-          <p className="muted">Код: <code>{code}</code></p>
-          <Link to="/" className="btn btn-light">Към началото</Link>
+      <div className="container" style={{ padding: "28px 0" }}>
+        <div className="card">
+          <h2 style={{ marginTop: 0 }}>Държавата не е намерена</h2>
+          <p>Невалиден код: <strong>{code}</strong></p>
+          <p><Link to="/">← Назад към началото</Link></p>
         </div>
-      </main>
+      </div>
     );
   }
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return country.groups || [];
-    return (country.groups || []).filter(g => {
-      return (
-        (g.name && g.name.toLowerCase().includes(q)) ||
-        (g.city && g.city.toLowerCase().includes(q))
-      );
-    });
-  }, [country.groups, query]);
-
   return (
-    <>
-      {/* Хедър на държавата */}
-      <section className="country-hero">
-        <div className="country-hero__inner">
-          <div className="country-title">
-            <img
-              src={country.flag}
-              alt={country.name}
-              className="country-flag"
-              loading="lazy"
-            />
-            <h1>{country.name}</h1>
-          </div>
-
-          <div className="country-meta">
-            <span className="badge">
-              {country.groups?.length || 0} местни групи
-            </span>
-            <Link to="/" className="btn btn-light">Начало</Link>
+    <div className="container" style={{ padding: "28px 0" }}>
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <img src={country.flag} alt={country.name} width="68" height="48" style={{ borderRadius: 8, objectFit: "cover" }}/>
+          <div>
+            <h2 style={{ margin: "0 0 4px" }}>{country.name}</h2>
+            <div style={{ color: "#6b7a8b" }}>Код: {country.code.toUpperCase()}</div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Търсене */}
-      <main className="page">
-        <div className="card">
-          <label htmlFor="search" className="muted" style={{ display: "block", marginBottom: 6 }}>
-            Търси по име на група или град
-          </label>
-          <input
-            id="search"
-            className="input"
-            placeholder="например: София, Vichy, Leader…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-
-        {/* Списък с групи */}
-        {filtered.length === 0 ? (
-          <div className="card" style={{ textAlign: "center" }}>
-            <p className="muted">Няма резултати.</p>
-          </div>
-        ) : (
-          <div className="grid-3">
-            {filtered.map((g, i) => (
-              <div key={`${g.name}-${i}`} className="group-card card">
-                <div className="group-card__head">
-                  <h3 className="group-title">{g.name}</h3>
-                  {g.city ? <span className="chip">{g.city}</span> : null}
+      <div className="card">
+        <h3 className="section-title">Местни групи (МИГ)</h3>
+        {(!country.groups || country.groups.length === 0) && <p>Няма въведени групи.</p>}
+        <div className="list">
+          {country.groups?.map((g, i) => (
+            <div key={i} className="item">
+              <div className="title">{g.name}</div>
+              <div className="meta">{g.city || "—"}</div>
+              {g.site && (
+                <div>
+                  <a href={g.site} target="_blank" rel="noreferrer">Официален сайт</a>
                 </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
 
-                {g.site ? (
-                  <a
-                    href={g.site}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-outline"
-                  >
-                    Към сайта
-                  </a>
-                ) : (
-                  <span className="muted">Няма официален сайт</span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <p className="muted" style={{ textAlign: "center", marginTop: 24 }}>
-          © 2025 LeaderTV. Всички права запазени.
-        </p>
-      </main>
-    </>
+      <p style={{ marginTop: 16 }}><Link to="/">← Назад към началото</Link></p>
+    </div>
   );
 }
