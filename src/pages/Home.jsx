@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { countries } from "../data/countries";
 
-// Ще се опитаме да ползваме services/api, ако го има.
-// Ако липсва/преименуван е – падаме към fetch('/api/...').
-let api = {};
-try { api = await import("../services/api"); } catch { /* no-op */ }
-
 const fmtBG = (d) =>
-  new Date(d).toLocaleDateString("bg-BG", { year: "numeric", month: "2-digit", day: "2-digit" });
+  new Date(d).toLocaleDateString("bg-BG", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 
 const sortByDateDesc = (arr, field = "date") =>
   [...(arr || [])].sort(
@@ -18,36 +17,51 @@ const sortByDateDesc = (arr, field = "date") =>
 export default function Home() {
   const nav = useNavigate();
 
-  // --- data state
   const [news, setNews] = useState({ items: [], loading: true });
   const [events, setEvents] = useState({ items: [], loading: true });
 
-  // --- load
   useEffect(() => {
-    const getNews = async () => {
-      try {
-        const data = api.getNews
-          ? await api.getNews()
-          : await (await fetch("/api/news")).json();
-        setNews({ items: sortByDateDesc(data).slice(0, 5), loading: false });
-      } catch {
-        setNews({ items: [], loading: false });
-      }
-    };
+    let cancelled = false;
 
-    const getEvents = async () => {
+    (async () => {
+      // Динамичен импорт БЕЗ top-level await
+      let api = {};
       try {
-        const data = api.getEvents
-          ? await api.getEvents()
-          : await (await fetch("/api/events")).json();
-        setEvents({ items: sortByDateDesc(data).slice(0, 5), loading: false });
+        api = await import("../services/api");
       } catch {
+        api = {};
+      }
+
+      // Фолбек към fetch, ако services/api липсва
+      const getNews =
+        api.getNews ||
+        (async () => {
+          const r = await fetch("/api/news");
+          return r.json();
+        });
+
+      const getEvents =
+        api.getEvents ||
+        (async () => {
+          const r = await fetch("/api/events");
+          return r.json();
+        });
+
+      try {
+        const [n, e] = await Promise.all([getNews(), getEvents()]);
+        if (cancelled) return;
+        setNews({ items: sortByDateDesc(n).slice(0, 5), loading: false });
+        setEvents({ items: sortByDateDesc(e).slice(0, 5), loading: false });
+      } catch {
+        if (cancelled) return;
+        setNews({ items: [], loading: false });
         setEvents({ items: [], loading: false });
       }
-    };
+    })();
 
-    getNews();
-    getEvents();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const totalNews = news.items.length;
@@ -87,7 +101,9 @@ export default function Home() {
                 Последни новини{" "}
                 {totalNews > 0 && <span className="badge">{totalNews}</span>}
               </h2>
-              <Link className="link" to="/news">Всички →</Link>
+              <Link className="link" to="/news">
+                Всички →
+              </Link>
             </header>
             <div className="card-body">
               {news.loading ? (
@@ -112,7 +128,9 @@ export default function Home() {
           <section className="card">
             <header className="card-head">
               <h2 className="card-title">Предстоящи събития</h2>
-              <Link className="link" to="/events">Всички →</Link>
+              <Link className="link" to="/events">
+                Всички →
+              </Link>
             </header>
             <div className="card-body">
               {events.loading ? (
@@ -140,7 +158,6 @@ export default function Home() {
   );
 }
 
-/* ---- tiny skeleton for loading ---- */
 function SkeletonList() {
   return (
     <div className="list">
