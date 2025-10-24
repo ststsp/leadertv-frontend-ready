@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
+const API_URL = import.meta.env.VITE_API_URL;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX ?? "/api";
 
 export default function Events() {
   const [items, setItems] = useState([]);
@@ -8,29 +9,28 @@ export default function Events() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let ignore = false;
+    let cancelled = false;
 
-    async function load() {
+    async function fetchEvents() {
       setLoading(true);
       setError("");
       try {
-        // очакван ендпойнт: GET /api/events -> [{ id, title, date, place, summary }]
-        const res = await fetch(`${API_BASE}/api/events`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (!ignore) setItems(Array.isArray(data) ? data : data?.items ?? []);
-      } catch (e) {
-        if (!ignore) setError("Неуспешно зареждане на събитията.");
-        console.error(e);
+        const response = await fetch(`${API_URL}${API_PREFIX}/events`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!cancelled) setItems(Array.isArray(data) ? data : data.items || []);
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setError("Неуспешно зареждане на събитията.");
+        }
       } finally {
-        if (!ignore) setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
-    load();
-    return () => {
-      ignore = true;
-    };
+    fetchEvents();
+    return () => (cancelled = true);
   }, []);
 
   return (
@@ -39,45 +39,24 @@ export default function Events() {
         <h1 className="text-3xl font-bold">Календар на събития</h1>
       </header>
 
-      {loading && (
-        <div className="bg-white rounded-2xl shadow p-6 text-gray-600">
-          Зареждане…
-        </div>
-      )}
-
-      {!loading && error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-6">
-          {error}
-        </div>
-      )}
-
+      {loading && <div className="bg-white p-6 rounded-xl shadow">Зареждане…</div>}
+      {error && <div className="bg-red-50 border border-red-200 p-6 rounded-xl text-red-600">{error}</div>}
       {!loading && !error && items.length === 0 && (
-        <div className="bg-white rounded-2xl shadow p-6 text-gray-600">
-          Няма записи.
-        </div>
+        <div className="bg-white p-6 rounded-xl shadow text-gray-600">Няма записи.</div>
       )}
 
       {!loading && !error && items.length > 0 && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((ev) => {
-            const date =
-              ev.date ? new Date(ev.date).toLocaleDateString("bg-BG") : "";
-            return (
-              <article
-                key={ev.id ?? ev._id ?? ev.slug ?? Math.random()}
-                className="bg-white rounded-2xl shadow p-6 hover:shadow-md transition"
-              >
-                <h2 className="text-xl font-semibold mb-1">{ev.title}</h2>
-                <div className="text-sm text-gray-500 mb-3">
-                  {date}
-                  {ev.place ? ` • ${ev.place}` : ""}
-                </div>
-                <p className="text-gray-700 line-clamp-4">
-                  {ev.summary ?? ev.description ?? ""}
-                </p>
-              </article>
-            );
-          })}
+          {items.map((ev) => (
+            <article key={ev.id ?? ev._id} className="bg-white p-6 rounded-2xl shadow hover:shadow-md transition">
+              <h2 className="text-xl font-semibold mb-1">{ev.title}</h2>
+              <div className="text-sm text-gray-500 mb-3">
+                {new Date(ev.date).toLocaleDateString("bg-BG")}
+                {ev.place ? ` • ${ev.place}` : ""}
+              </div>
+              <p className="text-gray-700 line-clamp-3">{ev.summary ?? ev.description}</p>
+            </article>
+          ))}
         </div>
       )}
     </section>
