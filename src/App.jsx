@@ -10,22 +10,33 @@ export default function App() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         {/* HEADER */}
         <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <Link to="/" className="text-2xl font-bold text-blue-700">
-              LeaderTV
-            </Link>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex h-16 items-center justify-between">
+              <Link to="/" className="text-2xl font-bold text-blue-700">
+                LeaderTV
+              </Link>
 
-            <nav className="flex gap-6 text-lg font-medium">
-              <Link to="/" className="hover:text-blue-600">Начало</Link>
-              <Link to="/news" className="hover:text-blue-600">Новини</Link>
-              <Link to="/events" className="hover:text-blue-600">Събития</Link>
-              <Link to="/admin" className="hover:text-blue-600">Админ</Link>
-            </nav>
+              {/* навигация вдясно с нормални разстояния */}
+              <nav className="ml-auto flex items-center gap-6 text-lg font-medium">
+                <Link className="hover:text-blue-600 transition-colors" to="/">
+                  Начало
+                </Link>
+                <Link className="hover:text-blue-600 transition-colors" to="/news">
+                  Новини
+                </Link>
+                <Link className="hover:text-blue-600 transition-colors" to="/events">
+                  Събития
+                </Link>
+                <Link className="hover:text-blue-600 transition-colors" to="/admin">
+                  Админ
+                </Link>
+              </nav>
+            </div>
           </div>
         </header>
 
         {/* MAIN */}
-        <main className="flex-1 max-w-7xl mx-auto px-6 py-10">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/news" element={<News />} />
