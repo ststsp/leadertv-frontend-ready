@@ -16,35 +16,15 @@ export default function App() {
             </Link>
 
             <nav className="flex gap-6 text-lg font-medium">
-              <Link
-                to="/"
-                className="hover:text-blue-600 transition-colors duration-200"
-              >
-                Начало
-              </Link>
-              <Link
-                to="/news"
-                className="hover:text-blue-600 transition-colors duration-200"
-              >
-                Новини
-              </Link>
-              <Link
-                to="/events"
-                className="hover:text-blue-600 transition-colors duration-200"
-              >
-                Събития
-              </Link>
-              <Link
-                to="/admin"
-                className="hover:text-blue-600 transition-colors duration-200"
-              >
-                Админ
-              </Link>
+              <Link to="/" className="hover:text-blue-600">Начало</Link>
+              <Link to="/news" className="hover:text-blue-600">Новини</Link>
+              <Link to="/events" className="hover:text-blue-600">Събития</Link>
+              <Link to="/admin" className="hover:text-blue-600">Админ</Link>
             </nav>
           </div>
         </header>
 
-        {/* MAIN CONTENT */}
+        {/* MAIN */}
         <main className="flex-1 max-w-7xl mx-auto px-6 py-10">
           <Routes>
             <Route path="/" element={<Home />} />
