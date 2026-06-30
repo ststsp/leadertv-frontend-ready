@@ -47,8 +47,11 @@ export default function EventsPage() {
               <h2 className="text-xl font-semibold">{e.title}</h2>
               <div className="text-sm text-gray-500">{fmtBG(e.date)}</div>
               {e.place && (
-                <p className="mt-2 text-gray-700">Място: {e.place}</p>
+              <p className="mt-2 text-gray-700">Място: {e.place}</p>
               )}
+              {e.summary && (
+               <p className="mt-2 text-gray-700">{e.summary}</p>
+               )}
             </li>
           ))}
         </ul>
