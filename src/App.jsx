@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home.jsx";
-import News from "./pages/News.jsx";
-import Events from "./pages/Events.jsx";
+import News from "./pages/NewsPage.jsx";
+import Events from "./pages/EventsPage.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import CountryPage from "./pages/CountryPage.jsx";
 
